@@ -92,7 +92,6 @@ AM_PROG_CC_C_O
 AC_CHECK_HEADERS([inttypes.h limits.h stddef.h stdlib.h string.h strings.h unistd.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
-AC_CHECK_HEADER_STDBOOL
 AC_TYPE_INT64_T
 AC_TYPE_SIZE_T
 
@@ -102,10 +101,10 @@ AC_CHECK_FUNCS([memmove memset mkdir strcasecmp strcspn strncasecmp strpbrk strs
 
 
 # OpenMP Flags for Compiling available in OPENMP_CFLAGS, OPENMP_FCFLAGS, etc.
-AC_LANG([Fortran])
-AX_OPENMP
-AC_LANG([Fortran 77])
-AX_OPENMP
+# AC_LANG([Fortran])
+# AX_OPENMP
+# AC_LANG([Fortran 77])
+# AX_OPENMP
 
 # For pthread library linking
 AC_LANG([C])
