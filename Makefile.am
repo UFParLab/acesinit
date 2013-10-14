@@ -1,7 +1,7 @@
 include $(top_srcdir)/aminclude.am
 EXTRA_DIST = doxygen.cfg
 
-bin_PROGRAMS=aces3init
+bin_PROGRAMS=acesinit
 
 AM_LDFLAGS=\
 $(FLIBS)\
@@ -26,19 +26,22 @@ ACES_BASIS_FILES=\
 ./src/basis/sip.cpp
 
 
-ACES3INIT_CPP_FLAGS = \
-    -I${top_srcdir}/src/include
+ACESINIT_CPP_FLAGS = \
+    -I${top_srcdir}/src/include\
+    -I${top_srcdir}/src/setup\
+    -I${top_srcdir}/src/basis
+
 
 AM_CPPFLAGS = \
-    $(ACES3INIT_CPP_FLAGS)
+    $(ACESINIT_CPP_FLAGS)
 
 
-ACES3INIT_BLAS_SOURCEFILES=\
+ACESINIT_BLAS_SOURCEFILES=\
 src/blas/dgemm.f\
 src/blas/dgemv.f\
 src/blas/sdot.f
 
-ACES3INIT_SOURCEFILES=\
+ACESINIT_SOURCEFILES=\
 src/aces2/leq.F\
 src/aces2/corchr.F\
 src/aces2/normal.F\
@@ -491,14 +494,14 @@ src/include/basis_info.h\
 src/aces_setup/setup_main.F
 
 
-aces3init_SOURCES = \
-    	$(ACES3INIT_SOURCEFILES)\
+acesinit_SOURCES = \
+    	$(ACESINIT_SOURCEFILES)\
 	$(ACES_SETUPFILES)\
     	$(ACES_BASIS_FILES)\
-    	$(ACES3INIT_BLAS_SOURCEFILES)\
+    	$(ACESINIT_BLAS_SOURCEFILES)\
 	src/aces_setup/setup_main_entry.c
 
-aces3init_LDFLAGS = \
+acesinit_LDFLAGS = \
 	$(FLIBS)\
 	$(FCLIBS)
 
