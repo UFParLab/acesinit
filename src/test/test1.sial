@@ -1,0 +1,9 @@
+     SIAL TEST1 
+
+     index kiter = 1, 25 
+     aoindex mu     = 1, norb
+     moaindex i = baocc, eaocc
+     moaindex a = bavirt, eavirt
+
+
+     ENDSIAL TEST1 
