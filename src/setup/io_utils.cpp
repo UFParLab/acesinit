@@ -29,9 +29,13 @@ BinaryOutputFile::BinaryOutputFile(const std::string& name){
 BinaryOutputFile::~BinaryOutputFile(){}
 
 void BinaryOutputFile::write_string(const std::string& aString) {
-	int length = (int) aString.length() + 1; //extra for null
+        //trim trailing spaces
+        size_t endpos = aString.find_last_not_of(" ");
+        std::string trimmed = (endpos == std::string::npos) ? "" : aString.substr(0,endpos+1);
+	int length = (int) trimmed.length() + 1; //extra for null
 	write_int(length);
-	file->write(aString.c_str(), length);
+//std::cout << "writing string " << trimmed << ", length=" << length << std::endl;
+	file->write(trimmed.c_str(), length);
 }
 
 void BinaryOutputFile::write_int( int value) {

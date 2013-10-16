@@ -146,7 +146,7 @@ c-------------------------------------------------------------------------------
       call cgetparam('SIAL_PROGRAM',sial_program_instance,sial_program)
       if (sial_program .ne. ' ') then 
          print *, 'sial_program = ', sial_program  
-         call add_sial_program('sial_progran'//C_NULL_CHAR)
+         call add_sial_program(sial_program//C_NULL_CHAR)
          nsial = nsial + 1 
          which_sial(nsial) = sial_program 
          sial_program_instance = sial_program_instance + 1 
