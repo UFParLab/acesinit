@@ -7,10 +7,12 @@
 ! ============================================================================
 
 
-      subroutine setup_main()
+      subroutine setup_main(jobname,datname)
 c      program setup_main
           use, intrinsic :: iso_c_binding
           implicit none
+          character, dimension(*), intent(in) :: datname
+          character, dimension(*), intent(in) :: jobname
 
       include 'setup_interface.f'
       include 'trace.h'
@@ -94,7 +96,7 @@ c     integer (C_INT) sip_sub_segsize
 c     integer (C_INT) sip_sub_occ_segsize
 c     integer (C_INT) sip_sub_virt_segsize
 c     integer (C_INT) sip_sub_ao_segsize
-      character *80 tmp
+c      character *80 tmp
 
       print *, 'calling initsetup_f from fortran'
 
@@ -106,9 +108,9 @@ c Assume this can be set to zero. If we are on an Altix then fix it.
 c This is effectively a dry run so set the dryrun flag to true. 
       dryrun     = .true. 
 
-      tmp = 'jobf10July'//C_NULL_CHAR
+c      tmp = 'jobf10July'//C_NULL_CHAR
 c      call init_setup('jobf10July'//C_NULL_CHAR)
-      call init_setup(tmp)
+      call init_setup(jobname)
 
       call aces_init_rte() 
 
@@ -550,7 +552,7 @@ c     call set_predefined_array('fockrohf_b'//C_NULL_CHAR, 2,
 c    *                            fockrohf_b)  
 
       call finalize_setup()
-      call dump_file('jobf10July.dat'//C_NULL_CHAR)
+      call dump_file(datname)
 
       return
       end subroutine
