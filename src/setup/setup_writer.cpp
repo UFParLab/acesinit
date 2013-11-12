@@ -109,6 +109,34 @@ void SetupWriter::addPredefinedContiguousArray(std::string name, int rank, int *
 
 }
 
+void SetupWriter::addPredefinedIntegerContiguousArray(std::string name, int rank, int * dims,
+			int * data){
+
+	//printArray("before adding to DS", name, rank, dims, data);
+
+	std::transform(name.begin(), name.end(), name.begin(), ::tolower);
+	if (predef_arr_.count(name)){
+		std::cerr << "Duplicate predefined array " << name << std::endl;
+	}
+	// Put copy of array into table
+	int num_elems = 1;
+	for (int i=0; i<rank; i++){
+		num_elems *= dims[i];
+	}
+	int * alloc_data = new int[num_elems];
+	std::copy(data, data+num_elems, alloc_data);
+	int * alloc_dims = new int[rank];
+	std::copy(dims, dims+rank, alloc_dims);
+
+	std::pair<int *, int *> dataPair = std::pair<int *, int *>(alloc_dims, alloc_data);
+	predef_int_arr_[name] = std::pair<int, std::pair<int *, int *> >(rank, dataPair);
+
+
+	//printArray("After adding to DS", name, predef_arr_[name].first, predef_arr_[name].second.first, predef_arr_[name].second.second);
+
+}
+
+
 void SetupWriter::addSialFileConfigInfo(std::string sialfile, std::string key, std::string value){
 	std::transform(sialfile.begin(), sialfile.end(), sialfile.begin(), ::tolower);
 	std::transform(key.begin(), key.end(), key.begin(), ::tolower);
@@ -195,6 +223,30 @@ void SetupWriter::write_data_file() {
 		}
 		double * array_data = it->second.second.second;
 		file->write_double_array(num_data_elems, array_data);
+
+		//printArray("To file", it->first, array_rank,array_dims, array_data);
+
+	}
+
+    // Write integer arrays
+	int num_predef_integer_arrays = predef_int_arr_.size();
+	file->write_int(num_predef_integer_arrays);
+	for (PredefIntArrMap::iterator it = predef_int_arr_.begin(); it != predef_int_arr_.end(); ++it){
+		// Array Name
+		file->write_string(it->first);
+		// Array Rank
+		int array_rank = it->second.first;
+		file->write_int(array_rank);
+		// Array Dimensions
+		int * array_dims = it->second.second.first;
+		file->write_int_array(array_rank, array_dims);
+		// Array Data
+		int num_data_elems = 1;
+		for (int i=0; i<array_rank; i++){
+			num_data_elems *= array_dims[i];
+		}
+		int * array_data = it->second.second.second;
+		file->write_int_array(num_data_elems, array_data);
 
 		//printArray("To file", it->first, array_rank,array_dims, array_data);
 

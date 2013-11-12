@@ -64,6 +64,7 @@ src/aces2/vec.F\
 src/aces2/zero.F\
 src/aces2/xgeopt.F\
 src/aces2/cross.F\
+src/aces23/setup_ccbeg.F\
 src/aces23/wisch.F\
 src/aces23/dlatrd.F\
 src/aces23/dsytrd.F\

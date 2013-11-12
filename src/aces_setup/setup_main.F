@@ -47,6 +47,7 @@ c     integer (C_INT) d2(2)
       integer (C_INT) sDim(2)
       real (C_DOUBLE) sVals(mxcbf,mxcbf)
       real (C_DOUBLE) sVals1(mxcbf)
+      integer (C_INT) iVals1(mxcbf)
 
       real(C_DOUBLE) dval
 c     real(C_DOUBLE) val(6)
@@ -58,11 +59,16 @@ c     real(C_DOUBLE) val2(9)
       integer (C_INT) sial_cparams(400) ! No more than 100 sial programs in one run allowed
       character*80 jobflow  
       real(C_DOUBLE) vnn  
+c     integer (C_INT) indx_cc(max_shells) 
+      integer (C_INT) ccbeg(max_shells)   
+      integer (C_INT) ccend(max_shells)   
+      integer (C_INT) intSpherical  
 
       character*5 lformat
       character*5 lstring
 
       integer i, j
+      integer icc 
       integer segs(maxsegs)   
       integer saveocc 
       integer savevirt  
@@ -536,15 +542,93 @@ c-------------------------------------------------------------------------------
       do i = 1, sDim(1)
          sVals1(i) = tixalpha(i)
       enddo
-      call set_predefined_array('ixalphas'//C_NULL_CHAR,1,sDim,sVals1)
+      call set_predefined_integer_array('ixalphas'//C_NULL_CHAR,1,sDim,
+     *                                   iVals1)
 
       sDim(1) = ntot_shells
       do i = 1, sDim(1)
          sVals1(i) = tixpcoeff(i)
       enddo
-      call set_predefined_array('ixpcoeffs'//C_NULL_CHAR,1,sDim,sVals1)
+      call set_predefined_integer_array('ixpcoeffs'//C_NULL_CHAR,1,sDim,
+     *                                   iVals1)
 
+c Array containg atomic coordinates 
 
+      sDim(1) = 3 
+      sDim(2) = ncenters  
+      do i = 1, sDim(1) 
+      do j = 1, sDim(2) 
+         sVals(i,j) = acenter(j,i) 
+      enddo 
+      enddo 
+      call set_predefined_array('coords'//C_NULL_CHAR,2,sDim,sVals)
+
+c Form the arrays ccbeg and ccend and indx_cc  
+
+      call setup_ccbeg(talpha, tixalpha, tpcoeff, tixpcoeff,
+     *                       ncfps, npfps, nshells, ccbeg, ccend,
+     *                       indx_cc, icc) 
+      sDim(1) = icc  
+      do i = 1, sDim(1)
+         sVals1(i) = ccbeg(i)
+      enddo
+      call set_predefined_integer_array('ccbeg'//C_NULL_CHAR,1,sDim,
+     *                                   iVals1)
+      do i = 1, sDim(1)
+         sVals1(i) = ccend(i)
+      enddo
+      call set_predefined_integer_array('ccend'//C_NULL_CHAR,1,sDim,
+     *                                   iVals1)
+      sDim(1) = nshells   
+      do i = 1, sDim(1)
+         sVals1(i) = indx_cc(i)
+      enddo
+      call set_predefined_integer_array('indx_cc'//C_NULL_CHAR,1,sDim,
+     *                                   iVals1)
+
+c Form the arrays end_nfps, ncfps, npfps, ivangmom  
+
+      sDim(1) = nshells   
+      do i = 1, sDim(1)
+         sVals1(i) = end_nfps(i)
+      enddo
+      call set_predefined_integer_array('end_nfps'//C_NULL_CHAR,1,sDim,
+     *                                   iVals1)
+      do i = 1, sDim(1)
+         sVals1(i) = ncfps(i)
+      enddo
+      call set_predefined_integer_array('ncfps'//C_NULL_CHAR,1,sDim, 
+     *                                   iVals1)
+      do i = 1, sDim(1)
+         sVals1(i) = npfps(i)
+      enddo
+      call set_predefined_integer_array('npfps'//C_NULL_CHAR,1,sDim, 
+     *                                   iVals1)
+      do i = 1, sDim(1)
+         sVals1(i) = ivangmom(i)
+      enddo
+      call set_predefined_integer_array('ivangmom'//C_NULL_CHAR,1,sDim,
+     *                                   iVals1)
+
+c Set end_nfps, ncfps, npfps  
+
+c Set the number of occupied and virtual orbitals 
+
+      call set_constant('nalpha_occupied'//C_NULL_CHAR,nalpha_occupied) 
+      call set_constant('nbeta_occupied'//C_NULL_CHAR,nbeta_occupied) 
+      call set_constant('nalpha_virtual'//C_NULL_CHAR,nalpha_virtual) 
+      call set_constant('nbeta_virtual'//C_NULL_CHAR,nbeta_virtual) 
+
+c Set the number of shells  
+      call set_constant('nshells'//C_NULL_CHAR,nshells) 
+
+c Set the spherical flag. This is a logical which has been converted to
+c integer 
+c     true --> 1 
+c     false --> 0 
+      if (ispherical) intSpherical = 1 
+      if (.not. ispherical) intSpherical = 0 
+      call set_constant('intSpherical'//C_NULL_CHAR,intSpherical) 
 
 c     call set_predefined_array('fockrohf_a'//C_NULL_CHAR, 2,
 c    *                            fockrohf_a)  

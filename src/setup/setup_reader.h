@@ -45,6 +45,7 @@ public:
 	typedef std::map<array::IndexType_t, std::vector<int> > SetupSegmentInfoMap;
 	typedef std::vector<std::string> SialProgList;
 	typedef std::map<std::string, std::pair<int, std::pair<int *, double *> > > PredefArrMap;
+	typedef std::map<std::string, std::pair<int, std::pair<int *, int *> > > PredefIntArrMap;
 	typedef std::map<std::string, std::string> KeyValueMap;
 	typedef std::map<std::string, KeyValueMap > FileConfigMap;
 
@@ -54,6 +55,7 @@ public:
 	int predefined_int(std::string);
     double predefined_scalar(std::string);
     array::Block * predefined_contiguous_array(std::string);
+    array::Block * predefined_contiguous_integer_array(std::string);
     int num_segments(array::IndexType_t);
     //int * segment_array(sip::IndexType_t);
     SialProgList sial_prog_list_;
@@ -61,6 +63,7 @@ public:
 	PredefScalarMap predefined_scalar_map_;
 	SetupSegmentInfoMap segment_map_;
 	PredefArrMap predef_arr_; 	// Map of predefined arrays
+	PredefIntArrMap predef_int_arr_; 	// Map of predefined integer arrays
 	FileConfigMap configs_;		// Map of sial files to their configurations in the form of a key-value map
 
 
@@ -78,6 +81,7 @@ private:
     void read_predefined_scalars();
     void read_segment_sizes();
     void read_predefined_arrays();
+    void read_predefined_integer_arrays();
     void read_sialfile_configs();
 
 

@@ -75,6 +75,23 @@
       end subroutine set_predefined_array
       end interface
 
+!>  Sets the shape and contents of a predefined static array
+!>  @param aname  The null terminated name of the array
+!>  @param  numDims  The rank of the array
+!>  @param  dims an array containing the sizes of each dimension.  This size of this array may either
+!>    be the actual number of dimensions (i.e. 2 for a 2-d static array) or MAXDIM
+!>  @param  vals  Array containing the elements of the INTEGER static array, which must be laid out contiguously.      
+      interface
+      subroutine set_predefined_integer_array(aname, numDims, dims, 
+     *                                        vals)bind(C)
+          use, intrinsic :: ISO_C_BINDING
+      character, dimension(*), intent(in):: aname
+      integer (C_INT), value, intent(in):: numDims
+      integer (C_INT), dimension(*), intent(in)::dims
+      integer (C_INT), dimension(*),  intent(in):: vals
+      end subroutine set_predefined_integer_array
+      end interface
+
 !> Sets segment sizes for aoindex
 !> @param num_segments The number of segments
 !> @param segment_sizes an array containing the size of each segment

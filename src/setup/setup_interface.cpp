@@ -69,6 +69,12 @@ void set_moindex_info(int num_segments, int *segment_sizes){
 /*!  Specify static predefined arrays */
 void set_predefined_array(const char *static_array_name, int numDims, int *dims, double *vals){
 	writer->addPredefinedContiguousArray(std::string(static_array_name), numDims, dims, vals);
+}
+
+/*!  Specify static predefined integer arrays */
+void set_predefined_integer_array(const char *static_array_name, int numDims, int *dims, int *vals){
+	writer->addPredefinedIntegerContiguousArray(std::string(static_array_name), numDims, dims, vals);
+
 
     // Debug
 	/*

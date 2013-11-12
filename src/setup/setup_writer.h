@@ -38,6 +38,7 @@ public:
 	void addPredefinedIntHeader(std::string name, int val);
 	void addPredefinedIntData(std::string name, int val);
 	void addPredefinedContiguousArray(std::string name, int rank, int * dims, double * data);
+	void addPredefinedIntegerContiguousArray(std::string name, int rank, int * dims, int * data);
 	void addSialProgram(std::string name);
 	void addSegmentInfo(array::IndexType_t index_type_num, int num_segments, int * segment_sizes);
 	void addPredefinedScalar(std::string name, double value);
@@ -47,6 +48,7 @@ public:
 	typedef std::map<int, std::pair<int, int *> > SegSizeArray;
 	typedef std::vector<std::string> SialProg;
 	typedef std::map<std::string, std::pair<int, std::pair<int *, double *> > > PredefArrMap;
+	typedef std::map<std::string, std::pair<int, std::pair<int *, int *> > > PredefIntArrMap;
 	typedef std::map<std::string, std::string> KeyValueMap;
 	typedef std::map<std::string, KeyValueMap > FileConfigMap;
 private:
@@ -58,6 +60,7 @@ private:
 	SialProg sial_programs_;   //list of sial program to execute
 	SegSizeArray segments_;  //segment sizes for each predefined index type
 	PredefArrMap predef_arr_; 	// Map of predefined arrays
+	PredefIntArrMap predef_int_arr_; 	// Map of predefined integer arrays
 	FileConfigMap configs_;		// Map of sial files to their configurations in the form of a key-value map
 	DISALLOW_COPY_AND_ASSIGN(SetupWriter);
 };

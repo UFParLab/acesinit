@@ -25,6 +25,7 @@ void SetupReader::read(InputFile * file) {
 	read_predefined_scalars();
 	read_segment_sizes();
 	read_predefined_arrays();
+	read_predefined_integer_arrays();
 	read_sialfile_configs();
 }
 
@@ -70,6 +71,30 @@ std::ostream& operator<<(std::ostream& os, const SetupReader & obj) {
 			num_elems *= dims[i];
 		}
 		os << itp->first << ":{ rank : ";
+		os << rank << " } (";
+		os << dims[0];
+		for (int i=1; i<rank; i++){
+			os <<" ," << dims[i];
+		}
+		os << "), [";
+		os << data [0];
+		for (int i=1; i<num_elems; i++){
+			os << ", " << data[i];
+		}
+		os << "]" << std::endl;
+	}
+
+	os << "Predefined integer arrays:" << std::endl;
+	SetupReader::PredefIntArrMap::const_iterator itpi;
+	for (itpi = obj.predef_int_arr_.begin(); itpi != obj.predef_int_arr_.end(); ++itpi){
+		int rank = itpi->second.first;
+		int * dims = itpi->second.second.first;
+		int * data = itpi->second.second.second;
+		int num_elems = 1;
+		for (int i = 0; i < rank; i++) {
+			num_elems *= dims[i];
+		}
+		os << itpi->first << ":{ rank : ";
 		os << rank << " } (";
 		os << dims[0];
 		for (int i=1; i<rank; i++){
@@ -192,6 +217,26 @@ void SetupReader::read_predefined_arrays(){
 		double * data = file->read_double_array(&num_data_elems);
 		std::pair<int *, double *> dataPair = std::pair<int *, double *>(dims, data);
 		predef_arr_[name] = std::pair<int, std::pair<int *, double *> >(rank, dataPair);
+	}
+}
+
+void SetupReader::read_predefined_integer_arrays(){
+	int n = file->read_int();
+	for (int i = 0; i < n; i++) {
+		// Name of array
+		std::string name = file->read_string();
+		// Rank of array
+		int rank = file->read_int();
+		// Dimensions
+		int * dims = file->read_int_array(&rank);
+		// Data
+		int num_data_elems = 1;
+		for (int i=0; i<rank; i++){
+			num_data_elems *= dims[i];
+		}
+		int * data = file->read_int_array(&num_data_elems);
+		std::pair<int *, int *> dataPair = std::pair<int *, int *>(dims, data);
+		predef_int_arr_[name] = std::pair<int, std::pair<int *, int *> >(rank, dataPair);
 	}
 }
 
