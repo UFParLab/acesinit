@@ -5,7 +5,7 @@ AR   0.0  4.0  0.0
 AR   0.0  4.0  4.0 
 
 *ACES2(BASIS=AUG-CC-PVTZ
-CALC=CCSD(T) 
+CALC=SCF 
 spherical=on
 REF=RHF,UNITS=BOHR
 COORDINATES=CARTESIAN
@@ -15,4 +15,4 @@ SYMMETRY=NONE)
 *SIP  
 MAXMEM= 900 
 TIMERS=NO 
-##SIAL_PROGRAM = scf_aguess.sio 
+SIAL_PROGRAM = scf_rhf_coreh.sio 

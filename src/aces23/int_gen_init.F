@@ -81,6 +81,16 @@ c   Note that this is NOT done if ECP's are used!!!
 c---------------------------------------------------------------------------
 
          ECP = iflags(71) 
+
+c---------------------------------------------------------------------------
+c   No sorting of shells.  Shells are processed in their original order.
+c---------------------------------------------------------------------------
+
+         write(6,*) ' Skipping BINPACK ' 
+         do i = 1, nshells
+            ixshells(i) = i
+         enddo
+         go to 1000 
          if (intpkg .eq. gamess_package .or.
      *       intpkg .eq. gamess_derivative_package) go to 1000
          if ((ECP .eq. 0) .and. (.NOT. frag_calc)) then  

@@ -624,8 +624,8 @@ c     ixcoeff       array indicating the beginning index for each pcoeff/shell
       write(6,*) ' Total number of shells', ntot_shells  
       write(6,*) ' ALPHAs ' 
       do n = 1, ntot_shells 
-         tixalpha(n) = alpha(n) 
-         tixpcoeff(n) = pcoeff(n) 
+         tixalpha(n) = ixalpha(n) 
+         tixpcoeff(n) = ixpcoef(n) 
       enddo 
       do i = 1, ntot_alpha 
          talpha(i) = alpha(i)
@@ -635,6 +635,13 @@ c     ixcoeff       array indicating the beginning index for each pcoeff/shell
       do i = 1, ntot_pcoef  
          tpcoeff(i) = pcoeff(i) 
          write(6,*) '     ', i, pcoeff(i) 
+      enddo 
+      write(6,*) ' tCoords ' 
+      do i = 1, 3 
+         write(6,*) '     ', i, (coord(i,n), n=1, ntot_shells) 
+      do n = 1, ntot_shells 
+         tcoord(i,n) = coord(i,n) 
+      enddo 
       enddo 
 C
       close(10)

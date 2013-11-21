@@ -20,6 +20,7 @@ c      program setup_main
       include 'frag_def.h'
       include 'sial_config_params.h'
       include 'basis_info.h'
+      include 'mxatms.par'
 
       integer max_segments, mxcbf  
       parameter (max_segments = 1000000)
@@ -44,8 +45,9 @@ c     integer (C_INT) nd
 c     integer (C_INT) d(6)
 c     integer (C_INT) d2(2)
       integer (C_INT) dd(max_segments)
-      integer (C_INT) sDim(2)
+      integer (C_INT) sDim2(2), sDim1(1), sDims(8)
       real (C_DOUBLE) sVals(mxcbf,mxcbf)
+      real (C_DOUBLE) cVals(3,mxatms)
       real (C_DOUBLE) sVals1(mxcbf)
       integer (C_INT) iVals1(mxcbf)
 
@@ -245,19 +247,19 @@ c--------------------------------------------------------------------------
 
           lformat = '(L1)'
           write (lstring, lformat) no_servers
-          call set_config_info(trim(sial_program),
+          call set_config_info(trim(sial_program)//C_NULL_CHAR,
      *            "NO_SERVERS"//C_NULL_CHAR, trim(lstring)//C_NULL_CHAR)
 
           write (lstring, lformat) ignore_dropmo
-          call set_config_info(trim(sial_program),
+          call set_config_info(trim(sial_program)//C_NULL_CHAR,
      *         "IGNORE_DROPMO"//C_NULL_CHAR, trim(lstring)//C_NULL_CHAR)
           write (lstring, lformat) use_2der_integrals
 c           print *, lstring
-          call set_config_info(trim(sial_program),
+          call set_config_info(trim(sial_program)//C_NULL_CHAR,
      *              "use_2der"//C_NULL_CHAR, trim(lstring)//C_NULL_CHAR)
           write (lstring, lformat) vvvi_stack
 c           print *, lstring
-          call set_config_info(trim(sial_program),
+          call set_config_info(trim(sial_program)//C_NULL_CHAR,
      *            "VVVI_STACK"//C_NULL_CHAR, trim(lstring)//C_NULL_CHAR)
 
 c          do j = 1, 4
@@ -338,6 +340,12 @@ c     do i = 1, norbs
 c        write(6,*) ' NORBS DD :', norbs, dd(i) 
 c     enddo 
       call set_aoindex_info(norbs,dd)              ! Atomic orbital segments 
+      sDim1(1) = norbs     
+      do i = 1, sDim1(1)
+         iVals1(i) = dd(i)
+      enddo
+      call set_predefined_integer_array('ao_seg_ranges'//C_NULL_CHAR,1,
+     *                                   sDim1, iVals1) 
 
       norbs = 1 
       dd(norbs) = eaocc_frag(1,1)   
@@ -443,7 +451,7 @@ c-------------------------------------------------------------------------------
       dval = 33.456
       call set_scalar('scalar1'//C_NULL_CHAR, dval)
       dval = 0.0 
-      call set_scalar('scfeng'//C_NULL_CHAR, dval)     ! The scf energy 
+      call set_scalar('scfeneg'//C_NULL_CHAR, dval)     ! The scf energy 
       dval = 0.0 
       call set_scalar('totenerg'//C_NULL_CHAR, dval)   ! The total energy 
       dval = damp_init  
@@ -458,156 +466,186 @@ c                              Set the 'static' predefined arrays
 c------------------------------------------------------------------------------------------  
 
 
-      sDim(1) = segs(nsegs)  
-      do i = 1, sDim(1) 
+      sDim1(1) = segs(nsegs)  
+      do i = 1, sDim1(1) 
          sVals1(i) = 0.0 
       enddo 
-      call set_predefined_array('e'//C_NULL_CHAR,  1, Sdim, sVals1)
-      call set_predefined_array('ea'//C_NULL_CHAR, 1, Sdim, sVals1)
-      call set_predefined_array('eb'//C_NULL_CHAR, 1, Sdim, sVals1)
+      call set_predefined_array('e'//C_NULL_CHAR,  1, Sdim1, sVals1)
+      call set_predefined_array('ea'//C_NULL_CHAR, 1, Sdim1, sVals1)
+      call set_predefined_array('eb'//C_NULL_CHAR, 1, Sdim1, sVals1)
 
-      sDim(1) = segs(nsegs)  
-      sDim(2) = nalpha_occupied + nalpha_virtual  
-      do i = 1, sDim(1) 
-      do j = 1, sDim(2) 
+      sDim2(1) = segs(nsegs)  
+      sDim2(2) = nalpha_occupied + nalpha_virtual  
+      do i = 1, sDim1(1) 
+      do j = 1, sDim2(2) 
          sVals(i,j) = 0.0 
       enddo 
       enddo 
-      call set_predefined_array('c'//C_NULL_CHAR,  2, sDim, sVals)
-      call set_predefined_array('ca'//C_NULL_CHAR, 2, sDim, sVals)
+      call set_predefined_array('c'//C_NULL_CHAR,  2, sDim2, sVals)
+      call set_predefined_array('ca'//C_NULL_CHAR, 2, sDim2, sVals)
 
-      sDim(1) = segs(nsegs)  
-      sDim(2) = nbeta_occupied + nbeta_virtual  
-      do i = 1, sDim(1) 
-      do j = 1, sDim(2) 
+      sDim2(1) = segs(nsegs)  
+      sDim2(2) = nbeta_occupied + nbeta_virtual  
+      do i = 1, sDim2(1) 
+      do j = 1, sDim2(2) 
          sVals(i,j) = 0.0 
       enddo 
       enddo 
-      call set_predefined_array('cb'//C_NULL_CHAR, 2, sDim, sVals)
+      call set_predefined_array('cb'//C_NULL_CHAR, 2, sDim2, sVals)
 
 
-      sDim(1) = nalpha_occupied + nalpha_virtual  
-      sDim(2) = nalpha_occupied + nalpha_virtual  
-      do i = 1, sDim(1) 
-      do j = 1, sDim(2) 
+      sDim2(1) = nalpha_occupied + nalpha_virtual  
+      sDim2(2) = nalpha_occupied + nalpha_virtual  
+      do i = 1, sDim2(1) 
+      do j = 1, sDim2(2) 
          sVals(i,j) = 0.0 
       enddo 
       enddo 
-      call set_predefined_array('fock_a'//C_NULL_CHAR, 2, sDim, sVals)
+      call set_predefined_array('fock_a'//C_NULL_CHAR, 2, sDim2, sVals)
 
 
-      sDim(1) = nbeta_occupied + nbeta_virtual  
-      sDim(2) = nbeta_occupied + nbeta_virtual  
-      do i = 1, sDim(1) 
-      do j = 1, sDim(2) 
+      sDim2(1) = nbeta_occupied + nbeta_virtual  
+      sDim2(2) = nbeta_occupied + nbeta_virtual  
+      do i = 1, sDim2(1) 
+      do j = 1, sDim2(2) 
          sVals(i,j) = 0.0 
       enddo 
       enddo 
-      call set_predefined_array('fock_b'//C_NULL_CHAR, 2, sDim, sVals)
+      call set_predefined_array('fock_b'//C_NULL_CHAR, 2, sDim2, sVals)
 
 
-      sDim(1) = segs(nsegs)  
-      sDim(2) = segs(nsegs)  
-      do i = 1, sDim(1) 
-      do j = 1, sDim(2) 
+      sDim2(1) = segs(nsegs)  
+      sDim2(2) = segs(nsegs)  
+      do i = 1, sDim2(1) 
+      do j = 1, sDim2(2) 
          sVals(i,j) = 0.0 
       enddo 
       enddo 
-      call set_predefined_array('oed_nai'//C_NULL_CHAR, 2, sDim, sVals)
-      call set_predefined_array('oed_kin'//C_NULL_CHAR, 2, sDim, sVals)
-      call set_predefined_array('oed_ovl'//C_NULL_CHAR, 2, sDim, sVals)
+      call set_predefined_array('oed_nai'//C_NULL_CHAR, 2, sDim2, sVals)
+      call set_predefined_array('oed_kin'//C_NULL_CHAR, 2, sDim2, sVals)
+      call set_predefined_array('oed_ovl'//C_NULL_CHAR, 2, sDim2, sVals)
 
       val0 = ntot_alpha
       call set_constant('nalphas'//C_NULL_CHAR, val0)  ! Number of coefficients in basis
 
-      val0 = ntot_pcoeff
+      val0 = ntot_pcoef
       call set_constant('npcoeffs'//C_NULL_CHAR, val0)  ! Number of exponents in basis
 
       val0 = ntot_shells
       call set_constant('ntotshells'//C_NULL_CHAR, val0)  ! Number of shells in basis
 
-      sDim(1) = ntot_alpha
-      do i = 1, sDim(1)
+      sDim1(1) = ntot_alpha
+      write(6,*) ' ALPHAS into SVALS ' 
+      do i = 1, sDim1(1)
          sVals1(i) = talpha(i)
+         write(6,*) i, talpha(i), sVals1(i) 
       enddo
-      call set_predefined_array('alphas'//C_NULL_CHAR,1,sDim,sVals1)
+      call set_predefined_array('alphas'//C_NULL_CHAR,1,sDim1,sVals1)
 
-      sDim(1) = ntot_pcoeff
-      do i = 1, sDim(1)
+      sDim1(1) = ntot_pcoef
+      do i = 1, sDim1(1)
          sVals1(i) = tpcoeff(i)
       enddo
-      call set_predefined_array('pcoeffs'//C_NULL_CHAR,1,sDim,sVals1)
+      call set_predefined_array('pcoeffs'//C_NULL_CHAR,1,sDim1,sVals1)
 
-      sDim(1) = ntot_shells
-      do i = 1, sDim(1)
-         sVals1(i) = tixalpha(i)
+      sDim1(1) = ntot_shells
+      do i = 1, sDim1(1)
+         iVals1(i) = tixalpha(i)
       enddo
-      call set_predefined_integer_array('ixalphas'//C_NULL_CHAR,1,sDim,
+      call set_predefined_integer_array('ixalphas'//C_NULL_CHAR,1,sDim1,
      *                                   iVals1)
 
-      sDim(1) = ntot_shells
-      do i = 1, sDim(1)
-         sVals1(i) = tixpcoeff(i)
+      sDim1(1) = ntot_shells
+      do i = 1, sDim1(1)
+         iVals1(i) = tixpcoeff(i)
       enddo
-      call set_predefined_integer_array('ixpcoeffs'//C_NULL_CHAR,1,sDim,
-     *                                   iVals1)
+      call set_predefined_integer_array('ixpcoeffs'//C_NULL_CHAR,1,
+     *                                   sDim1, iVals1)
 
 c Array containg atomic coordinates 
 
-      sDim(1) = 3 
-      sDim(2) = ncenters  
-      do i = 1, sDim(1) 
-      do j = 1, sDim(2) 
-         sVals(i,j) = acenter(j,i) 
+      sDim2(1) = 3 
+      sDim2(2) = ncenters  
+      do i = 1, sDim2(1) 
+      do j = 1, sDim2(2) 
+         cVals(i,j) = acenter(j,i) 
       enddo 
       enddo 
-      call set_predefined_array('coords'//C_NULL_CHAR,2,sDim,sVals)
+      write(6,*) ' COORDS:' 
+      do i = 1, sDim2(1) 
+      do j = 1, sDim2(2) 
+         write(6,*) '  ', i, j, cVals(i,j) 
+      enddo 
+      enddo 
+      call set_predefined_array('coords'//C_NULL_CHAR,2,sDim2,cVals)
+
+      sDim2(1) = 3
+      sDim2(2) = nshells  
+      do i = 1, sDim2(1) 
+      do j = 1, sDim2(2) 
+         cVals(i,j) = tcoord(i,j) 
+      enddo 
+      enddo 
+      write(6,*) ' TCOORDS:' 
+      do i = 1, sDim2(1) 
+      do j = 1, sDim2(2) 
+         write(6,*) '  ', i, j, cVals(i,j) 
+      enddo 
+      enddo 
+      call set_predefined_array('tcoords'//C_NULL_CHAR,2,sDim2,cVals)
+
 
 c Form the arrays ccbeg and ccend and indx_cc  
 
       call setup_ccbeg(talpha, tixalpha, tpcoeff, tixpcoeff,
      *                       ncfps, npfps, nshells, ccbeg, ccend,
      *                       indx_cc, icc) 
-      sDim(1) = icc  
-      do i = 1, sDim(1)
-         sVals1(i) = ccbeg(i)
+      write(6,*) ' CC_BEG '
+      sDim1(1) = icc  
+      do i = 1, sDim1(1)
+         iVals1(i) = ccbeg(i)
+         write(6,*) i, iVals1(i) 
       enddo
-      call set_predefined_integer_array('ccbeg'//C_NULL_CHAR,1,sDim,
+      call set_predefined_integer_array('ccbeg'//C_NULL_CHAR,1,sDim1,
      *                                   iVals1)
-      do i = 1, sDim(1)
-         sVals1(i) = ccend(i)
+      write(6,*) ' CC_END '
+      do i = 1, sDim1(1)
+         iVals1(i) = ccend(i)
+         write(6,*) i, iVals1(i) 
       enddo
-      call set_predefined_integer_array('ccend'//C_NULL_CHAR,1,sDim,
+      call set_predefined_integer_array('ccend'//C_NULL_CHAR,1,sDim1,
      *                                   iVals1)
-      sDim(1) = nshells   
-      do i = 1, sDim(1)
-         sVals1(i) = indx_cc(i)
+      write(6,*) ' INDX_CC '
+      sDim1(1) = nshells   
+      do i = 1, sDim1(1)
+         iVals1(i) = indx_cc(i)
+         write(6,*) i, iVals1(i) 
       enddo
-      call set_predefined_integer_array('indx_cc'//C_NULL_CHAR,1,sDim,
+      call set_predefined_integer_array('indx_cc'//C_NULL_CHAR,1,sDim1,
      *                                   iVals1)
 
 c Form the arrays end_nfps, ncfps, npfps, ivangmom  
 
-      sDim(1) = nshells   
-      do i = 1, sDim(1)
-         sVals1(i) = end_nfps(i)
+      sDim1(1) = nshells   
+      do i = 1, sDim1(1)
+         iVals1(i) = end_nfps(i)
       enddo
-      call set_predefined_integer_array('end_nfps'//C_NULL_CHAR,1,sDim,
+      call set_predefined_integer_array('end_nfps'//C_NULL_CHAR,1,sDim1,
      *                                   iVals1)
-      do i = 1, sDim(1)
-         sVals1(i) = ncfps(i)
+      do i = 1, sDim1(1)
+         iVals1(i) = ncfps(i)
       enddo
-      call set_predefined_integer_array('ncfps'//C_NULL_CHAR,1,sDim, 
+      call set_predefined_integer_array('ncfps'//C_NULL_CHAR,1,sDim1, 
      *                                   iVals1)
-      do i = 1, sDim(1)
-         sVals1(i) = npfps(i)
+      do i = 1, sDim1(1)
+         iVals1(i) = npfps(i)
       enddo
-      call set_predefined_integer_array('npfps'//C_NULL_CHAR,1,sDim, 
+      call set_predefined_integer_array('npfps'//C_NULL_CHAR,1,sDim1, 
      *                                   iVals1)
-      do i = 1, sDim(1)
-         sVals1(i) = ivangmom(i)
+      do i = 1, sDim1(1)
+         iVals1(i) = ivangmom(i)
       enddo
-      call set_predefined_integer_array('ivangmom'//C_NULL_CHAR,1,sDim,
+      call set_predefined_integer_array('ivangmom'//C_NULL_CHAR,1,sDim1,
      *                                   iVals1)
 
 c Set end_nfps, ncfps, npfps  
@@ -629,6 +667,16 @@ c     false --> 0
       if (ispherical) intSpherical = 1 
       if (.not. ispherical) intSpherical = 0 
       call set_constant('intSpherical'//C_NULL_CHAR,intSpherical) 
+      call set_constant('ncenters'//C_NULL_CHAR,ncenters) 
+
+      sDim1(1) = ncenters  
+      write(6,*) ' Number of charges = ', sDim1(1) 
+      do i = 1, sDim1(1)
+         sVals1(i) = charge(i)
+         write(6,*) i, sVals1(i) 
+      enddo
+      call set_predefined_array('charge'//C_NULL_CHAR,1,sDim1,sVals1)
+
 
 c     call set_predefined_array('fockrohf_a'//C_NULL_CHAR, 2,
 c    *                            fockrohf_a)  
