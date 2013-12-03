@@ -365,6 +365,12 @@ c     enddo
 
       call set_moindex_info(norbs,dd)              ! MO index ranges. BOTH occupied and virtual 
       call set_moaindex_info(norbs,dd)             ! MO alpha index ranges. BOTH occupied and virtual 
+      sDim1(1) = norbs     
+      do i = 1, sDim1(1)
+         iVals1(i) = dd(i)
+      enddo
+      call set_predefined_integer_array('moa_seg_ranges'//C_NULL_CHAR,1,
+     *                                   sDim1, iVals1) 
 
       norbs = 1 
       dd(norbs) = ebocc_frag(1,1) 
@@ -383,6 +389,13 @@ c     enddo
       enddo 
 
       call set_mobindex_info(norbs,dd)              ! MO beta index ranges. BOTH occupied and virtual 
+      sDim1(1) = norbs     
+      do i = 1, sDim1(1)
+         iVals1(i) = dd(i)
+      enddo
+      call set_predefined_integer_array('mob_seg_ranges'//C_NULL_CHAR,1,
+     *                                   sDim1, iVals1) 
+
 
 c------------------------------------------------------------------------------------------  
 c                              End Setting the index segment ranges  
