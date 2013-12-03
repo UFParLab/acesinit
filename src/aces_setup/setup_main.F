@@ -677,8 +677,10 @@ c Set the spherical flag. This is a logical which has been converted to
 c integer 
 c     true --> 1 
 c     false --> 0 
-      if (ispherical) intSpherical = 1 
-      if (.not. ispherical) intSpherical = 0 
+c     if (ispherical) intSpherical = 1 
+c     if (.not. ispherical) intSpherical = 0 
+      if (ispherical.eq.1) intSpherical = 1 
+      if (ispherical.ne.1) intSpherical = 0 
       call set_constant('intSpherical'//C_NULL_CHAR,intSpherical) 
       call set_constant('ncenters'//C_NULL_CHAR,ncenters) 
 

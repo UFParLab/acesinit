@@ -1,6 +1,8 @@
 Ar4 test of rhf scf energy in an aug-cc-pvtz basis  
 AR   0.0  0.0  0.0 
 AR   0.0  0.0  4.0 
+AR   0.0  4.0  0.0 
+AR   4.0  0.0  0.0 
 
 *ACES2(BASIS=CC-PVDZ
 CALC=SCF 
@@ -13,6 +15,7 @@ SYMMETRY=NONE)
 *SIP  
 MAXMEM= 900 
 TIMERS=YES  
-SIP_MX_OCC_SEGSIZE=9 
-SIP_MX_VIRT_SEGSIZE=9 
+SIP_MX_SEGSIZE=36  
+SIP_MX_OCC_SEGSIZE=36  
+SIP_MX_VIRT_SEGSIZE=36  
 SIAL_PROGRAM = scf_mp2_rhf.sio 
