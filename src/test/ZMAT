@@ -1,10 +1,10 @@
-Ar4 test of rhf scf energy in an aug-cc-pvtz basis  
-AR   0.0  0.0  0.0 
-AR   0.0  0.0  4.0 
-AR   0.0  4.0  0.0 
-AR   4.0  0.0  0.0 
+Ar8 test of rhf scf energy in a cc-pvtz basis  
+NE   0.0  0.0  0.0 
+NE   0.0  0.0  2.0 
+NE   0.0  2.0  0.0 
+NE   2.0  0.0  0.0 
 
-*ACES2(BASIS=CC-PVDZ
+*ACES2(BASIS=CC-PVDZ 
 CALC=SCF 
 spherical=on
 REF=RHF,UNITS=BOHR
@@ -15,7 +15,7 @@ SYMMETRY=NONE)
 *SIP  
 MAXMEM= 900 
 TIMERS=YES  
-SIP_MX_SEGSIZE=36  
-SIP_MX_OCC_SEGSIZE=36  
-SIP_MX_VIRT_SEGSIZE=36  
+SIP_MX_SEGSIZE=6        
+SIP_MX_OCC_SEGSIZE=5  
+SIP_MX_VIRT_SEGSIZE=15  
 SIAL_PROGRAM = scf_mp2_rhf.sio 

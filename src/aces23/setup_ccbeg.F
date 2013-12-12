@@ -56,6 +56,8 @@ c---------------------------------------------------------------------------
            icc = icc + 1
          enddo   ! k
       enddo      ! ishell
+      
+      icc = icc - 1 ! remove off by one error VFL
 
       return
       end  

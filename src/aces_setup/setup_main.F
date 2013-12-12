@@ -342,7 +342,12 @@ c     enddo
       call set_aoindex_info(norbs,dd)              ! Atomic orbital segments 
       sDim1(1) = norbs     
       do i = 1, sDim1(1)
-         iVals1(i) = dd(i)
+         iVals1(i) = dd(i)  
+         if (i .gt. 1) then 
+            do j = 1, i-1 
+               iVals1(i) = iVals1(i) + dd(j)
+            enddo 
+         endif 
       enddo
       call set_predefined_integer_array('ao_seg_ranges'//C_NULL_CHAR,1,
      *                                   sDim1, iVals1) 
@@ -364,6 +369,13 @@ c     enddo
       enddo 
 
       call set_moindex_info(norbs,dd)              ! MO index ranges. BOTH occupied and virtual 
+      sDim1(1) = norbs     
+      do i = 1, sDim1(1)
+         iVals1(i) = dd(i)
+      enddo
+      call set_predefined_integer_array('mo_seg_ranges'//C_NULL_CHAR,1,
+     *                                   sDim1, iVals1) 
+
       call set_moaindex_info(norbs,dd)             ! MO alpha index ranges. BOTH occupied and virtual 
       sDim1(1) = norbs     
       do i = 1, sDim1(1)
