@@ -120,6 +120,8 @@ src/aces23/dlassq.F\
 src/aces23/xdnrm2.F\
 src/aces23/dgetrf.F\
 src/aces23/shells_to_segments.F\
+src/aces23/fshells_to_segments.F\
+src/aces23/fragment_orbitals.F\
 src/aces23/dlartg.F\
 src/aces23/params.F\
 src/aces23/dtrti2.F\

@@ -69,7 +69,7 @@ c     integer (C_INT) indx_cc(max_shells)
       character*5 lformat
       character*5 lstring
 
-      integer i, j
+      integer i, j, kfrag 
       integer icc 
       integer segs(maxsegs)   
       integer saveocc 
@@ -135,7 +135,6 @@ c      call init_setup('jobf10July'//C_NULL_CHAR)
       else 
           print *,'MEMORY ALLOCATION Sucessfull: maxmem = ',maxmem
       endif
-
 
       call scf_init(vnn) 
 
@@ -313,6 +312,7 @@ c-------------------------------------------------------------------------------
 c                 Now you can build the segment tables.  
 c------------------------------------------------------------------------------------------  
 
+      if (.not. frag_calc) then  
       nfrags = 1 
       do i = 1, nshells 
          segs(i) = 0 
@@ -325,6 +325,27 @@ c-------------------------------------------------------------------------------
       call set_nbvirt_segs(nbfvirt, nbeta_occupied, nbeta_virtual, 
      *                     sip_mx_virt_segsize) 
       call shells_to_segments(sip_mx_ao_segsize, segs, nsegs, .false.)
+      endif 
+
+
+      if (frag_calc) then 
+c---------------------------------------------------------------------------
+c     If this is a fragment calculation set up the orbital ranges. 
+c---------------------------------------------------------------------------
+
+        call fragment_orbitals(i) 
+        call fshells_to_segments(sip_mx_ao_segsize, segs, nsegs)
+
+
+        call set_naocc_segs(nafocc, nalpha_occupied, sip_mx_occ_segsize) 
+        call set_nbocc_segs(nbfocc, nbeta_occupied, sip_mx_occ_segsize) 
+        call set_navirt_segs(nafvirt, nalpha_occupied, nalpha_virtual, 
+     *                     sip_mx_virt_segsize) 
+        call set_nbvirt_segs(nbfvirt, nbeta_occupied, nbeta_virtual, 
+     *                     sip_mx_virt_segsize) 
+        call set_frag_segs()  
+
+      endif 
 
 c------------------------------------------------------------------------------------------  
 c                              Set the index segment ranges  
@@ -352,18 +373,18 @@ c     enddo
       call set_predefined_integer_array('ao_seg_ranges'//C_NULL_CHAR,1,
      *                                   sDim1, iVals1) 
 
-      norbs = 1 
-      dd(norbs) = eaocc_frag(1,1)   
-      do i = 2, n_aocc(1) 
-         norbs = norbs + 1 
-         dd(norbs) = eaocc_frag(1,i) - eaocc_frag(1,i-1)  
+      norbs = 0 
+      do kfrag = 1, nfrags 
+         do i = 1, n_aocc(kfrag) 
+            norbs = norbs + 1 
+            dd(norbs) = eaocc_frag(kfrag,i) - baocc_frag(kfrag,i) +1 
+         enddo 
+         do i = 1, n_avirt(kfrag) 
+            norbs = norbs + 1 
+            dd(norbs) = eavirt_frag(kfrag,i) - bavirt_frag(kfrag,i)+1  
+         enddo 
       enddo 
-      norbs = norbs + 1 
-      dd(norbs) = eavirt_frag(1,1) - eaocc_frag(1,n_aocc(1))  
-      do i = 2, n_avirt(1) 
-         norbs = norbs + 1 
-         dd(norbs) = eavirt_frag(1,i) - eavirt_frag(1,i-1)  
-      enddo 
+
       do i = 1, norbs 
          write(6,*) ' NORBS DD :', norbs, dd(i) 
       enddo 
@@ -384,18 +405,18 @@ c     enddo
       call set_predefined_integer_array('moa_seg_ranges'//C_NULL_CHAR,1,
      *                                   sDim1, iVals1) 
 
-      norbs = 1 
-      dd(norbs) = ebocc_frag(1,1) 
-      do i = 2, n_bocc(1) 
-         norbs = norbs + 1 
-         dd(norbs) = ebocc_frag(1,i) - ebocc_frag(1,i-1)  
+      norbs = 0 
+      do kfrag = 1, nfrags 
+         do i = 1, n_bocc(kfrag) 
+            norbs = norbs + 1 
+            dd(norbs) = ebocc_frag(kfrag,i) - bbocc_frag(kfrag,i) +1 
+         enddo 
+         do i = 1, n_avirt(kfrag) 
+            norbs = norbs + 1 
+            dd(norbs) = ebvirt_frag(kfrag,i) - bbvirt_frag(kfrag,i)+1  
+         enddo 
       enddo 
-      norbs = norbs + 1 
-      dd(norbs) = ebvirt_frag(1,1) - ebocc_frag(1,n_bocc(1))  
-      do i = 2, n_bvirt(1) 
-         norbs = norbs + 1 
-         dd(norbs) = ebvirt_frag(1,i) - ebvirt_frag(1,i-1)  
-      enddo 
+
       do i = 1, norbs 
          write(6,*) ' NORBS DD :', norbs, dd(i) 
       enddo 
@@ -704,6 +725,8 @@ c     if (.not. ispherical) intSpherical = 0
       enddo
       call set_predefined_array('charge'//C_NULL_CHAR,1,sDim1,sVals1)
 
+c Set the maximum number of integral Shells  
+      call set_constant('max_shells'//C_NULL_CHAR,max_shells) 
 
 c     call set_predefined_array('fockrohf_a'//C_NULL_CHAR, 2,
 c    *                            fockrohf_a)  

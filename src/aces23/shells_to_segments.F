@@ -40,7 +40,7 @@ c---------------------------------------------------------------------------
       nsegs  = 0
       nsh    = end_nfps(1)
       sum = 0
-      last_atom = atoms(1)
+      last_atom = atom(1)
   100 continue
       if (nsh .gt. mx_seg_size) then
          print *,'Error: Shell ',ishell,' > max. seg. size of ',
@@ -50,13 +50,13 @@ c---------------------------------------------------------------------------
 	endif
 
       if (atom_based) then
-         if (atoms(ishell) .ne. last_atom) then
+         if (atom(ishell) .ne. last_atom) then
 
 c-----------------------------------------------------------------------------
 c   This is the boundary of a new atom.  Force a segment at this point.
 c-----------------------------------------------------------------------------
 
-            last_atom   = atoms(ishell)   ! thsi is the atom for the next seg.
+            last_atom   = atom(ishell)   ! thsi is the atom for the next seg.
             ishell      = ishell - 1
             nsegs       = nsegs + 1
             segs(nsegs) = end_nfps(ishell) 
@@ -67,7 +67,7 @@ c-----------------------------------------------------------------------------
 
       sum = sum + nsh
       if (sum .gt. mx_seg_size) then
-         last_atom   = atoms(ishell)
+         last_atom   = atom(ishell)
          ishell      = ishell - 1
          nsegs       = nsegs + 1         ! increment the number of segments
          segs(nsegs) = end_nfps(ishell)  ! set the segment size

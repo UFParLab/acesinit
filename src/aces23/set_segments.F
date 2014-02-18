@@ -22,9 +22,12 @@ C  in the file COPYRIGHT.
 c As a test just set occ fragmants 
 
       n_frag = nfrags 
-      do i = 1, n_frag 
-         occ_frag(i) = nocc_orbitals ! n_aocc(i)  
-      enddo 
+      if (nfrags .eq. 1) occ_frag(1) = nocc_orbitals 
+      if (nfrags .gt. 1) then 
+         do i = 1, n_frag 
+            occ_frag(i) = n_aocc(i)  
+         enddo 
+      endif 
 
 c Determine the effective mx_occ_seg_size 
 
@@ -67,10 +70,10 @@ c Determine the effective mx_occ_seg_size
          endif 
 
       enddo 
-      if (nocc .gt. nsegs) then 
-         mx_occ_seg_size = mx_occ_seg_size + 1 
-         go to 100 
-      endif 
+c     if (nocc .gt. nsegs) then 
+c        mx_occ_seg_size = mx_occ_seg_size + 1 
+c        go to 100 
+c     endif 
 
       write(6,*) ' NaOCC = ', nocc 
       start = 0 
@@ -100,9 +103,12 @@ c Determine the effective mx_occ_seg_size
 c As a test just set virt fragmants 
 
       n_frag = nfrags 
-      do i = 1, n_frag 
-         virt_frag(i) = nvirt_orbitals ! n_avirt(i)  
-      enddo 
+      if (nfrags .eq. 1) virt_frag(1) = nvirt_orbitals 
+      if (nfrags .gt. 1) then 
+         do i = 1, n_frag 
+            virt_frag(i) = n_avirt(i)  
+         enddo 
+      endif 
 
 c Determine the effective mx_occ_seg_size 
 
@@ -146,10 +152,10 @@ c Determine the effective mx_occ_seg_size
          endif 
 
       enddo 
-      if (nvirt .gt. nsegs) then 
-         mx_virt_seg_size = mx_virt_seg_size + 1 
-         go to 100 
-      endif 
+c     if (nvirt .gt. nsegs) then 
+c        mx_virt_seg_size = mx_virt_seg_size + 1 
+c        go to 100 
+c     endif 
 
 
       write(6,*) ' NaVIRT = ', nvirt, n_frag, virt_frag(1)  
@@ -178,9 +184,12 @@ c Determine the effective mx_occ_seg_size
 c As a test just set occ fragmants 
 
       n_frag = nfrags 
-      do i = 1, n_frag 
-         occ_frag(i) = nocc_orbitals ! n_bocc(i)  
-      enddo 
+      if (nfrags .eq. 1) occ_frag(1) = nocc_orbitals 
+      if (nfrags .gt. 1) then 
+         do i = 1, n_frag 
+            occ_frag(i) = n_bocc(i)  
+         enddo 
+      endif 
 
       nsegs = nocc_orbitals/mx_occ_seg_size 
       write(6,*) ' VFL nsegs - ', nsegs, mx_occ_seg_size 
@@ -222,10 +231,10 @@ c As a test just set occ fragmants
          endif 
 
       enddo 
-      if (nocc .gt. nsegs) then 
-         mx_occ_seg_size = mx_occ_seg_size + 1 
-         go to 100 
-      endif 
+c     if (nocc .gt. nsegs) then 
+c        mx_occ_seg_size = mx_occ_seg_size + 1 
+c        go to 100 
+c     endif 
 
       write(6,*) ' NbOCC = ', nocc 
       start = 0 
@@ -254,9 +263,12 @@ c As a test just set occ fragmants
 c As a test just set virt fragmants 
 
       n_frag = nfrags 
-      do i = 1, n_frag 
-         virt_frag(i) = nvirt_orbitals ! n_bvirt(i)  
-      enddo 
+      if (nfrags .eq. 1) virt_frag(1) = nvirt_orbitals 
+      if (nfrags .gt. 1) then 
+         do i = 1, n_frag 
+            virt_frag(i) = n_bvirt(i)  
+         enddo 
+      endif 
 
 c Determine the effective mx_occ_seg_size 
 
@@ -299,10 +311,10 @@ c Determine the effective mx_occ_seg_size
          endif 
 
       enddo 
-      if (nvirt .gt. nsegs) then 
-         mx_virt_seg_size = mx_virt_seg_size + 1 
-         go to 100 
-      endif 
+c     if (nvirt .gt. nsegs) then 
+c        mx_virt_seg_size = mx_virt_seg_size + 1 
+c        go to 100 
+c     endif 
 
       write(6,*) ' NbVIRT = ', nvirt 
       start = nocc_orbitals 

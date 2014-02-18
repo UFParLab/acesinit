@@ -25,7 +25,7 @@ scf_rhf_aguess.sio
 IGNORE_DROPMO=YES
 NO_SERVERS=YES 
 
-scf_rhf_coreh.sio
+scf_rhf_coreh.siox 
 IGNORE_DROPMO=YES
 NO_SERVERS=YES 
 

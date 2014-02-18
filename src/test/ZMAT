@@ -1,8 +1,6 @@
 Ar8 test of rhf scf energy in a cc-pvtz basis  
 AR   0.0  0.0  0.0 
-NE   0.0  0.0  2.0 
-NE   0.0  2.0  0.0 
-NE   2.0  0.0  0.0 
+AR   0.0  0.0  4.0 
 
 *ACES2(BASIS=CC-PVDZ 
 CALC=SCF 
@@ -13,9 +11,19 @@ SCF_CONV=8
 SYMMETRY=NONE)
 
 *SIP  
-MAXMEM= 900 
+MAXMEM= 1200 
 TIMERS=YES  
-#SIP_MX_SEGSIZE=9          
-#SIP_MX_OCC_SEGSIZE=5   
-#SIP_MX_VIRT_SEGSIZE=12   
-SIAL_PROGRAM = scf_mp2_rhf.sio 
+SIP_MX_SEGSIZE=9           
+#SIP_MX_OCC_SEGSIZE=5    
+#SIP_MX_VIRT_SEGSIZE=8   
+SIAL_PROGRAM = scf_rhf_coreh.siox
+SIAL_PROGRAM = tran_rhf_no4v.siox
+SIAL_PROGRAM = rccsd_rhf.siox
+SIAL_PROGRAM = rccsdpt_aab.siox
+SIAL_PROGRAM = rccsdpt_aaa.siox
+
+*FRAGLIST 
+2 
+1 1
+1
+2
