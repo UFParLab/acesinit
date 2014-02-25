@@ -65,9 +65,9 @@ C GET SHELL INFORMATION FOR THIS ATOM
 C
         NSHELL=INUMSHEL(IMOL)
         IOFFMOL=ISHLOFF(IMOL)
-        if (IOFFZMAT+NSHELL.gt.500) then
+        if (IOFFZMAT+NSHELL.gt.5000) then
            print *, '@SHELLINF: Assertion failed.'
-           print *, '           maximum number of shells = 500'
+           print *, '           maximum number of shells = 5000'
            print *, '           require at least ',IOFFZMAT+NSHELL
            call errex
         end if

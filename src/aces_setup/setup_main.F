@@ -24,7 +24,7 @@ c      program setup_main
 
       integer max_segments, mxcbf  
       parameter (max_segments = 1000000)
-      parameter (mxcbf = 5000) 
+      parameter (mxcbf = 10000) 
 c      parameter (max_segments = 10000)
 c      parameter (mxcbf = 500) 
       integer (C_INT) nfocc 
@@ -46,7 +46,7 @@ c     integer (C_INT) d(6)
 c     integer (C_INT) d2(2)
       integer (C_INT) dd(max_segments)
       integer (C_INT) sDim2(2), sDim1(1), sDims(8)
-      real (C_DOUBLE) sVals(mxcbf,mxcbf)
+c     real (C_DOUBLE) sVals(mxcbf,mxcbf)
       real (C_DOUBLE) cVals(3,mxatms)
       real (C_DOUBLE) sVals1(mxcbf)
       integer (C_INT) iVals1(mxcbf)
@@ -76,6 +76,8 @@ c     integer (C_INT) indx_cc(max_shells)
       integer savevirt  
       integer saveao 
       integer auto_seg_switch 
+      integer m_segs 
+      integer n_a_occ, n_b_occ, n_a_virt, n_b_virt 
 
 c------------------------------------------------------------------------------------------  
 c                  Parameters read from ZMAT   
@@ -385,9 +387,9 @@ c     enddo
          enddo 
       enddo 
 
-      do i = 1, norbs 
-         write(6,*) ' NORBS DD :', norbs, dd(i) 
-      enddo 
+c     do i = 1, norbs 
+c        write(6,*) ' NORBS DD :', norbs, dd(i) 
+c     enddo 
 
       call set_moindex_info(norbs,dd)              ! MO index ranges. BOTH occupied and virtual 
       sDim1(1) = norbs     
@@ -417,9 +419,9 @@ c     enddo
          enddo 
       enddo 
 
-      do i = 1, norbs 
-         write(6,*) ' NORBS DD :', norbs, dd(i) 
-      enddo 
+c     do i = 1, norbs 
+c        write(6,*) ' NORBS DD :', norbs, dd(i) 
+c     enddo 
 
       call set_mobindex_info(norbs,dd)              ! MO beta index ranges. BOTH occupied and virtual 
       sDim1(1) = norbs     
@@ -429,6 +431,7 @@ c     enddo
       call set_predefined_integer_array('mob_seg_ranges'//C_NULL_CHAR,1,
      *                                   sDim1, iVals1) 
 
+      write(6,*) ' Done setting segment ranges ' 
 
 c------------------------------------------------------------------------------------------  
 c                              End Setting the index segment ranges  
@@ -485,6 +488,8 @@ c-------------------------------------------------------------------------------
       call set_constant('scf_hist'//C_NULL_CHAR, val0)   ! Number of histories to use in the SCF DIIS  
       call set_constant('fromvar'//C_NULL_CHAR, nd)      ! ????  
 
+      write(6,*) ' Done setting integer constants ' 
+
 c     if (ignore_dropmo) then 
 c         ignore_dropmo = .false. 
 c         go to 100  
@@ -506,6 +511,10 @@ c-------------------------------------------------------------------------------
       call set_scalar('scf_conv'//C_NULL_CHAR, dval)   ! The SCF convergence threshold   
       dval = cc_conv   
       call set_scalar('cc_conv'//C_NULL_CHAR, dval)    ! The CC/lambda convergence threshold   
+      write(6,*) ' The NN repulsion is :', scf_energy 
+      call set_scalar('nn_repulsion'//C_NULL_CHAR, scf_energy) !  Nuclear-Nuclear repulsion energy 
+
+      write(6,*) ' Done setting predefined constants constants ' 
 
 c------------------------------------------------------------------------------------------  
 c                              Set the 'static' predefined arrays  
@@ -516,60 +525,60 @@ c-------------------------------------------------------------------------------
       do i = 1, sDim1(1) 
          sVals1(i) = 0.0 
       enddo 
-      call set_predefined_array('e'//C_NULL_CHAR,  1, Sdim1, sVals1)
-      call set_predefined_array('ea'//C_NULL_CHAR, 1, Sdim1, sVals1)
-      call set_predefined_array('eb'//C_NULL_CHAR, 1, Sdim1, sVals1)
+c     call set_predefined_array('e'//C_NULL_CHAR,  1, Sdim1, sVals1)
+c     call set_predefined_array('ea'//C_NULL_CHAR, 1, Sdim1, sVals1)
+c     call set_predefined_array('eb'//C_NULL_CHAR, 1, Sdim1, sVals1)
 
-      sDim2(1) = segs(nsegs)  
-      sDim2(2) = nalpha_occupied + nalpha_virtual  
-      do i = 1, sDim1(1) 
-      do j = 1, sDim2(2) 
-         sVals(i,j) = 0.0 
-      enddo 
-      enddo 
-      call set_predefined_array('c'//C_NULL_CHAR,  2, sDim2, sVals)
-      call set_predefined_array('ca'//C_NULL_CHAR, 2, sDim2, sVals)
+c     sDim2(1) = segs(nsegs)  
+c     sDim2(2) = nalpha_occupied + nalpha_virtual  
+c     do i = 1, sDim1(1) 
+c     do j = 1, sDim2(2) 
+c        sVals(i,j) = 0.0 
+c     enddo 
+c     enddo 
+c     call set_predefined_array('c'//C_NULL_CHAR,  2, sDim2, sVals)
+c     call set_predefined_array('ca'//C_NULL_CHAR, 2, sDim2, sVals)
 
-      sDim2(1) = segs(nsegs)  
-      sDim2(2) = nbeta_occupied + nbeta_virtual  
-      do i = 1, sDim2(1) 
-      do j = 1, sDim2(2) 
-         sVals(i,j) = 0.0 
-      enddo 
-      enddo 
-      call set_predefined_array('cb'//C_NULL_CHAR, 2, sDim2, sVals)
-
-
-      sDim2(1) = nalpha_occupied + nalpha_virtual  
-      sDim2(2) = nalpha_occupied + nalpha_virtual  
-      do i = 1, sDim2(1) 
-      do j = 1, sDim2(2) 
-         sVals(i,j) = 0.0 
-      enddo 
-      enddo 
-      call set_predefined_array('fock_a'//C_NULL_CHAR, 2, sDim2, sVals)
+c     sDim2(1) = segs(nsegs)  
+c     sDim2(2) = nbeta_occupied + nbeta_virtual  
+c     do i = 1, sDim2(1) 
+c     do j = 1, sDim2(2) 
+c        sVals(i,j) = 0.0 
+c     enddo 
+c     enddo 
+c     call set_predefined_array('cb'//C_NULL_CHAR, 2, sDim2, sVals)
 
 
-      sDim2(1) = nbeta_occupied + nbeta_virtual  
-      sDim2(2) = nbeta_occupied + nbeta_virtual  
-      do i = 1, sDim2(1) 
-      do j = 1, sDim2(2) 
-         sVals(i,j) = 0.0 
-      enddo 
-      enddo 
-      call set_predefined_array('fock_b'//C_NULL_CHAR, 2, sDim2, sVals)
+c     sDim2(1) = nalpha_occupied + nalpha_virtual  
+c     sDim2(2) = nalpha_occupied + nalpha_virtual  
+c     do i = 1, sDim2(1) 
+c     do j = 1, sDim2(2) 
+c        sVals(i,j) = 0.0 
+c     enddo 
+c     enddo 
+c     call set_predefined_array('fock_a'//C_NULL_CHAR, 2, sDim2, sVals)
 
 
-      sDim2(1) = segs(nsegs)  
-      sDim2(2) = segs(nsegs)  
-      do i = 1, sDim2(1) 
-      do j = 1, sDim2(2) 
-         sVals(i,j) = 0.0 
-      enddo 
-      enddo 
-      call set_predefined_array('oed_nai'//C_NULL_CHAR, 2, sDim2, sVals)
-      call set_predefined_array('oed_kin'//C_NULL_CHAR, 2, sDim2, sVals)
-      call set_predefined_array('oed_ovl'//C_NULL_CHAR, 2, sDim2, sVals)
+c     sDim2(1) = nbeta_occupied + nbeta_virtual  
+c     sDim2(2) = nbeta_occupied + nbeta_virtual  
+c     do i = 1, sDim2(1) 
+c     do j = 1, sDim2(2) 
+c        sVals(i,j) = 0.0 
+c     enddo 
+c     enddo 
+c     call set_predefined_array('fock_b'//C_NULL_CHAR, 2, sDim2, sVals)
+
+
+c     sDim2(1) = segs(nsegs)  
+c     sDim2(2) = segs(nsegs)  
+c     do i = 1, sDim2(1) 
+c     do j = 1, sDim2(2) 
+c        sVals(i,j) = 0.0 
+c     enddo 
+c     enddo 
+c     call set_predefined_array('oed_nai'//C_NULL_CHAR, 2, sDim2, sVals)
+c     call set_predefined_array('oed_kin'//C_NULL_CHAR, 2, sDim2, sVals)
+c     call set_predefined_array('oed_ovl'//C_NULL_CHAR, 2, sDim2, sVals)
 
       val0 = ntot_alpha
       call set_constant('nalphas'//C_NULL_CHAR, val0)  ! Number of coefficients in basis
@@ -728,10 +737,123 @@ c     if (.not. ispherical) intSpherical = 0
 c Set the maximum number of integral Shells  
       call set_constant('max_shells'//C_NULL_CHAR,max_shells) 
 
+      write(6,*) ' Done setting predefined arrays ' 
+
 c     call set_predefined_array('fockrohf_a'//C_NULL_CHAR, 2,
 c    *                            fockrohf_a)  
 c     call set_predefined_array('fockrohf_b'//C_NULL_CHAR, 2,
 c    *                            fockrohf_b)  
+
+c *************************************************************************
+c Set the parameters defining the fragment calculation. 
+c *************************************************************************
+      call set_constant('nfrags'//C_NULL_CHAR,nfrags) 
+
+      sDim1(1) = nfrags  
+      call set_predefined_integer_array('natoms_frag'//C_NULL_CHAR,1,
+     *                                  sDim1, natoms_frag)
+      sDim2(1) = nfrags  
+      sDim2(2) = 1  
+      do i = 1, nfrags 
+         if (natoms_frag(i) .gt. sDim2(2)) sDim2(2) = natoms_frag(i) 
+      enddo   
+      call set_predefined_integer_array('watom_frag'//C_NULL_CHAR,2,
+     *                                  sDim2, watom_frag)
+      call set_predefined_integer_array('fragAO'//C_NULL_CHAR,1,
+     *                                  sDim1, fragAO)
+      call set_predefined_integer_array('n_occ'//C_NULL_CHAR,1,
+     *                                  sDim1, n_occ)
+      call set_predefined_integer_array('n_aocc'//C_NULL_CHAR,1,
+     *                                  sDim1, n_aocc)
+      call set_predefined_integer_array('n_bocc'//C_NULL_CHAR,1,
+     *                                  sDim1, n_bocc)
+      call set_predefined_integer_array('n_virt'//C_NULL_CHAR,1,
+     *                                  sDim1, n_virt)
+      call set_predefined_integer_array('n_avirt'//C_NULL_CHAR,1,
+     *                                  sDim1, n_avirt)
+      call set_predefined_integer_array('n_bvirt'//C_NULL_CHAR,1,
+     *                                  sDim1, n_bvirt)
+
+      call set_predefined_integer_array('bocc_frag'//C_NULL_CHAR,2,
+     *                                  sDim2, bocc_frag)
+      call set_predefined_integer_array('baocc_frag'//C_NULL_CHAR,2,
+     *                                  sDim2, baocc_frag)
+      call set_predefined_integer_array('bbocc_frag'//C_NULL_CHAR,2,
+     *                                  sDim2, bbocc_frag)
+      call set_predefined_integer_array('eocc_frag'//C_NULL_CHAR,2,
+     *                                  sDim2, eocc_frag)
+      call set_predefined_integer_array('eaocc_frag'//C_NULL_CHAR,2,
+     *                                  sDim2, eaocc_frag)
+      call set_predefined_integer_array('ebocc_frag'//C_NULL_CHAR,2,
+     *                                  sDim2, ebocc_frag)
+      call set_predefined_integer_array('bvirt_frag'//C_NULL_CHAR,2,
+     *                                  sDim2, bvirt_frag)
+      call set_predefined_integer_array('bavirt_frag'//C_NULL_CHAR,2,
+     *                                  sDim2, bavirt_frag)
+      call set_predefined_integer_array('bbvirt_frag'//C_NULL_CHAR,2,
+     *                                  sDim2, bbvirt_frag)
+      call set_predefined_integer_array('evirt_frag'//C_NULL_CHAR,2,
+     *                                  sDim2, evirt_frag)
+      call set_predefined_integer_array('eavirt_frag'//C_NULL_CHAR,2,
+     *                                  sDim2, eavirt_frag)
+      call set_predefined_integer_array('ebvirt_frag'//C_NULL_CHAR,2,
+     *                                  sDim2, ebvirt_frag)
+
+      write(6,*) ' Done first set of fragment predefined arrays ' 
+
+       n_a_occ = 0 
+       n_b_occ = 0 
+       n_a_virt = 0 
+       n_b_virt = 0 
+       do i = 1, nfrags 
+          n_a_occ = n_a_occ + n_aocc(i) 
+          n_b_occ = n_b_occ + n_bocc(i) 
+          n_a_virt = n_a_virt + n_avirt(i) 
+          n_b_virt = n_b_virt + n_bvirt(i) 
+       enddo 
+
+      sDim1(1) = nsegs     
+      write(6,*) ' AO_SEGS = ', sDim1(1)  
+      call set_predefined_integer_array('w_frag_ao'//C_NULL_CHAR,1,
+     *                                  sDim1, w_frag_AO)
+
+      sDim1(1) = n_a_occ   
+      write(6,*) ' moocc_SEGS = ', sDim1(1)  
+      call set_predefined_integer_array('w_frag_occ'//C_NULL_CHAR,1,
+     *                                  sDim1, w_frag_occ)
+
+      sDim1(1) = n_a_occ     
+      write(6,*) ' naocc_SEGS = ', sDim1(1)  
+      call set_predefined_integer_array('w_frag_aocc'//C_NULL_CHAR,1,
+     *                                  sDim1, w_frag_aocc)
+
+      sDim1(1) = n_b_occ     
+      write(6,*) ' nbocc_SEGS = ', sDim1(1)  
+      call set_predefined_integer_array('w_frag_bocc'//C_NULL_CHAR,1,
+     *                                  sDim1, w_frag_bocc)
+
+      sDim1(1) = n_a_virt     
+      write(6,*) ' nvirt_SEGS = ', sDim1(1)  
+      call set_predefined_integer_array('w_frag_virt'//C_NULL_CHAR,1,
+
+     *                                  sDim1, w_frag_virt)
+      sDim1(1) = n_a_virt  
+      write(6,*) ' navirt_SEGS = ', sDim1(1)  
+
+      call set_predefined_integer_array('w_frag_avirt'//C_NULL_CHAR,1,
+     *                                  sDim1, w_frag_avirt)
+
+      sDim1(1) = n_b_virt     
+      write(6,*) ' nbvirt_SEGS = ', sDim1(1)  
+      call set_predefined_integer_array('w_frag_bvirt'//C_NULL_CHAR,1,
+     *                                  sDim1, w_frag_bvirt)
+
+      write(6,*) ' Done second set of fragment predefined arrays ' 
+
+c *************************************************************************
+c Done Setting the parameters defining the fragment calculation. 
+c *************************************************************************
+c 
 
       call finalize_setup()
       call dump_file(datname)

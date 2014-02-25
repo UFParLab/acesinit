@@ -9,10 +9,10 @@ c maxbasfn.par as well.
 
       INTEGER MXCBF
 #   ifdef F_64BIT
-      PARAMETER (MXCBF=5000)
+      PARAMETER (MXCBF=10000)
 #   else
 c      PARAMETER (MXCBF=255)
-      PARAMETER (MXCBF=5000)
+      PARAMETER (MXCBF=10000)
 #   endif
 c mxcbf.par : end
 #endif /* _MXCBF_PAR_ */
