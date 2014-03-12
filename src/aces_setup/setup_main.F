@@ -38,15 +38,15 @@ c      parameter (mxcbf = 500)
       integer (C_INT) nsegs 
       integer (C_INT) c_nshells  
 
-c     integer (C_INT) maxmem 
+c      integer (C_INT) maxmem 
       integer (C_INT) nsial 
       integer (C_INT) val0
-c     integer (C_INT) nd
-c     integer (C_INT) d(6)
-c     integer (C_INT) d2(2)
+c      integer (C_INT) nd
+      integer (C_INT) d(6)
+      integer (C_INT) d2(2)
       integer (C_INT) dd(max_segments)
       integer (C_INT) sDim2(2), sDim1(1), sDims(8)
-c     real (C_DOUBLE) sVals(mxcbf,mxcbf)
+      real (C_DOUBLE) sVals(mxcbf,mxcbf)
       real (C_DOUBLE) cVals(3,mxatms)
       real (C_DOUBLE) sVals1(mxcbf)
       integer (C_INT) iVals1(mxcbf)
