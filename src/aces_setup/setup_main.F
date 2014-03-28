@@ -381,6 +381,9 @@ c     enddo
             norbs = norbs + 1 
             dd(norbs) = eaocc_frag(kfrag,i) - baocc_frag(kfrag,i) +1 
          enddo 
+      enddo 
+
+      do kfrag = 1, nfrags 
          do i = 1, n_avirt(kfrag) 
             norbs = norbs + 1 
             dd(norbs) = eavirt_frag(kfrag,i) - bavirt_frag(kfrag,i)+1  
@@ -403,6 +406,7 @@ c     enddo
       sDim1(1) = norbs     
       do i = 1, sDim1(1)
          iVals1(i) = dd(i)
+         write(6,*) ' moarange:', i, dd(i) 
       enddo
       call set_predefined_integer_array('moa_seg_ranges'//C_NULL_CHAR,1,
      *                                   sDim1, iVals1) 
@@ -413,7 +417,10 @@ c     enddo
             norbs = norbs + 1 
             dd(norbs) = ebocc_frag(kfrag,i) - bbocc_frag(kfrag,i) +1 
          enddo 
-         do i = 1, n_avirt(kfrag) 
+      enddo 
+
+      do kfrag = 1, nfrags 
+         do i = 1, n_bvirt(kfrag) 
             norbs = norbs + 1 
             dd(norbs) = ebvirt_frag(kfrag,i) - bbvirt_frag(kfrag,i)+1  
          enddo 
@@ -644,7 +651,7 @@ c Array containg atomic coordinates
       write(6,*) ' TCOORDS:' 
       do i = 1, sDim2(1) 
       do j = 1, sDim2(2) 
-         write(6,*) '  ', i, j, cVals(i,j) 
+         write(6,*) '  ', i, j, tcoord(i,j), cVals(i,j) 
       enddo 
       enddo 
       call set_predefined_array('tcoords'//C_NULL_CHAR,2,sDim2,cVals)
@@ -679,7 +686,7 @@ c Form the arrays ccbeg and ccend and indx_cc
       call set_predefined_integer_array('indx_cc'//C_NULL_CHAR,1,sDim1,
      *                                   iVals1)
 
-c Form the arrays end_nfps, ncfps, npfps, ivangmom  
+c Form the arrays end_nfps, ncfps, npfps, ivangmom, atom[map of atoms to shells] 
 
       sDim1(1) = nshells   
       do i = 1, sDim1(1)
@@ -701,6 +708,11 @@ c Form the arrays end_nfps, ncfps, npfps, ivangmom
          iVals1(i) = ivangmom(i)
       enddo
       call set_predefined_integer_array('ivangmom'//C_NULL_CHAR,1,sDim1,
+     *                                   iVals1)
+      do i = 1, sDim1(1)
+         iVals1(i) = atom(i)
+      enddo
+      call set_predefined_integer_array('atom'//C_NULL_CHAR,1,sDim1,
      *                                   iVals1)
 
 c Set end_nfps, ncfps, npfps  
@@ -749,6 +761,10 @@ c Set the parameters defining the fragment calculation.
 c *************************************************************************
       call set_constant('nfrags'//C_NULL_CHAR,nfrags) 
 
+      write(6,*) ' NFRAGS = ', nfrags 
+      do i = 1, nfrags
+         write(6,*) i, natoms_frag(i) 
+      enddo 
       sDim1(1) = nfrags  
       call set_predefined_integer_array('natoms_frag'//C_NULL_CHAR,1,
      *                                  sDim1, natoms_frag)
@@ -818,7 +834,7 @@ c *************************************************************************
      *                                  sDim1, w_frag_AO)
 
       sDim1(1) = n_a_occ   
-      write(6,*) ' moocc_SEGS = ', sDim1(1)  
+      write(6,*) ' noocc_SEGS = ', sDim1(1)  
       call set_predefined_integer_array('w_frag_occ'//C_NULL_CHAR,1,
      *                                  sDim1, w_frag_occ)
 
