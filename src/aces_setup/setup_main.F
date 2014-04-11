@@ -611,15 +611,19 @@ c     call set_predefined_array('oed_ovl'//C_NULL_CHAR, 2, sDim2, sVals)
       call set_predefined_array('pcoeffs'//C_NULL_CHAR,1,sDim1,sVals1)
 
       sDim1(1) = ntot_shells
+      write(6,*) ' IXALPHS ' 
       do i = 1, sDim1(1)
          iVals1(i) = tixalpha(i)
+         write(6,*) i, tixalpha(i) 
       enddo
       call set_predefined_integer_array('ixalphas'//C_NULL_CHAR,1,sDim1,
      *                                   iVals1)
 
       sDim1(1) = ntot_shells
+      write(6,*) ' IXCOEFFS ' 
       do i = 1, sDim1(1)
          iVals1(i) = tixpcoeff(i)
+         write(6,*) i, iVals1(i) 
       enddo
       call set_predefined_integer_array('ixpcoeffs'//C_NULL_CHAR,1,
      *                                   sDim1, iVals1)

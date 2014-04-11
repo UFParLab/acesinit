@@ -17,7 +17,7 @@ C  in the file COPYRIGHT.
       include 'frag_def.h'
       integer nocc, nocc_orbitals, mx_occ_seg_size
       integer i, j, start, nsegs    
-      integer n_frag, occ_frag(100), nocc_frag(100)
+      integer n_frag, occ_frag(maxfrag), nocc_frag(maxfrag)
 
 c As a test just set occ fragmants 
 
@@ -98,7 +98,7 @@ c     endif
       include 'frag_def.h'
       integer nvirt, nocc_orbitals, nvirt_orbitals, mx_virt_seg_size
       integer i, j, start, nsegs    
-      integer n_frag, virt_frag(100), nvirt_frag(100) 
+      integer n_frag, virt_frag(maxfrag), nvirt_frag(maxfrag) 
 
 c As a test just set virt fragmants 
 
@@ -179,7 +179,7 @@ c     endif
       include 'frag_def.h'
       integer nocc, nocc_orbitals, mx_occ_seg_size
       integer i, j, start, nsegs    
-      integer n_frag, occ_frag(100), nocc_frag(100) 
+      integer n_frag, occ_frag(maxfrag), nocc_frag(maxfrag) 
 
 c As a test just set occ fragmants 
 
@@ -258,7 +258,7 @@ c     endif
       include 'frag_def.h'
       integer nvirt, nocc_orbitals, nvirt_orbitals, mx_virt_seg_size
       integer i, j, start, nsegs    
-      integer n_frag, virt_frag(100), nvirt_frag(100) 
+      integer n_frag, virt_frag(maxfrag), nvirt_frag(maxfrag) 
 
 c As a test just set virt fragmants 
 

@@ -467,12 +467,16 @@ C
       ishell = 0
       nxt_alpha = 1
       nxt_pcoef = 1 
+
+      write(6,*) ' COORDS IN READ ' 
+
       DO 10 IATM = 1, IUATMS
 C
          READ(10,1000) ZNUC, IJUNK, NSHL,(ISHL(I),I=1,NSHL)
  1000    FORMAT(F20.1,10I5)
 C
          READ(10,1010) ATMNAM(IATM), X, Y, Z
+         write(6,*) iatm, ATMNAM(IATM), x, y, z 
  1010    FORMAT(A4,3F20.12)
 C     
          IDGOFF = 0
@@ -622,11 +626,15 @@ c     ixcoeff       array indicating the beginning index for each pcoeff/shell
       write(6,*) ' Total number of alphas', ntot_alpha 
       write(6,*) ' Total number of pcoeff', ntot_pcoef 
       write(6,*) ' Total number of shells', ntot_shells  
-      write(6,*) ' ALPHAs ' 
       do n = 1, ntot_shells 
          tixalpha(n) = ixalpha(n) 
          tixpcoeff(n) = ixpcoef(n) 
       enddo 
+      write(6,*) ' IXALPHAs ' 
+      do i = 1, ntot_shells   
+         write(6,*) '     ', i, tixalpha(i) 
+      enddo 
+      write(6,*) ' ALPHAs ' 
       do i = 1, ntot_alpha 
          talpha(i) = alpha(i)
          write(6,*) '     ', i, alpha(i) 

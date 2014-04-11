@@ -4,7 +4,7 @@
 
       integer ntot_alpha, ntot_pcoef, ntot_shells 
       integer maxcoeff, maxalpha, maxshells    
-      parameter (maxcoeff = 10000)
+      parameter (maxcoeff = 50000)
       parameter (maxalpha = 10000)
       parameter (maxshells = 10000)
       double precision Talpha(maxalpha)
