@@ -327,6 +327,7 @@ c-------------------------------------------------------------------------------
       call set_nbvirt_segs(nbfvirt, nbeta_occupied, nbeta_virtual, 
      *                     sip_mx_virt_segsize) 
       call shells_to_segments(sip_mx_ao_segsize, segs, nsegs, .false.)
+      nfrags = 1 
       endif 
 
 
@@ -447,6 +448,12 @@ c-------------------------------------------------------------------------------
 c------------------------------------------------------------------------------------------  
 c                              Set the integer constants 
 c------------------------------------------------------------------------------------------  
+
+      write(6,*) ' NORB =', nsegs  
+      write(6,*) ' NAOOCC =', nafocc  
+      write(6,*) ' NBOOCC =', nbfocc  
+      write(6,*) ' NAFVIRT =', nafvirt    
+      write(6,*) ' NBFVIRT =', nbfvirt    
   
       val0 = nsegs 
       call set_constant('norb'//C_NULL_CHAR, val0)     ! Number of atomic orbital segments 
@@ -460,9 +467,9 @@ c-------------------------------------------------------------------------------
       call set_constant('eaocc'//C_NULL_CHAR, val0)    ! Ending alpha occupied  segment 
       val0 = 1 ! start segments at 1 
       call set_constant('bbocc'//C_NULL_CHAR, val0)    ! Beginning beta occupied segment  
-      val0 = nafocc  
+      val0 = nbfocc  
       call set_constant('ebocc'//C_NULL_CHAR, val0)    ! Ending beta occupied  segment 
-      val0 = nafocc + 1 
+      val0 = nbfocc + 1 
       call set_constant('bavirt'//C_NULL_CHAR, val0)   ! Beginning alpha virtual segment  
       val0 = nafocc + nafvirt  
       call set_constant('eavirt'//C_NULL_CHAR, val0)   ! Ending alpha virtual segment  
@@ -763,19 +770,29 @@ c    *                            fockrohf_b)
 c *************************************************************************
 c Set the parameters defining the fragment calculation. 
 c *************************************************************************
+      if (.not. frag_calc) nfrags = 0  
       call set_constant('nfrags'//C_NULL_CHAR,nfrags) 
 
       write(6,*) ' NFRAGS = ', nfrags 
+      if (frag_calc) then 
       do i = 1, nfrags
          write(6,*) i, natoms_frag(i) 
       enddo 
       sDim1(1) = nfrags  
       call set_predefined_integer_array('natoms_frag'//C_NULL_CHAR,1,
      *                                  sDim1, natoms_frag)
-      sDim2(1) = nfrags  
-      sDim2(2) = 1  
-      do i = 1, nfrags 
-         if (natoms_frag(i) .gt. sDim2(2)) sDim2(2) = natoms_frag(i) 
+      sDim2(1) = maxfrag  
+      sDim2(2) = maxapf   
+c     sDim2(1) = nfrags  
+c     sDim2(2) = 1  
+c     do i = 1, nfrags 
+c        if (natoms_frag(i) .gt. sDim2(2)) sDim2(2) = natoms_frag(i) 
+c     enddo   
+      write(6,*) ' WATOM_FRAG ', sDim2(1), sDim2(2)  
+      do j = 1, sDim2(2)  
+      do i = 1, sDim2(1)  
+         write(6,*) '  ', i, j , watom_frag(i,j) 
+      enddo   
       enddo   
       call set_predefined_integer_array('watom_frag'//C_NULL_CHAR,2,
      *                                  sDim2, watom_frag)
@@ -869,6 +886,7 @@ c *************************************************************************
      *                                  sDim1, w_frag_bvirt)
 
       write(6,*) ' Done second set of fragment predefined arrays ' 
+      endif ! frag_calc
 
 c *************************************************************************
 c Done Setting the parameters defining the fragment calculation. 
