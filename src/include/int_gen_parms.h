@@ -24,8 +24,8 @@ c--------------------------------------------------------------------------
       integer max_centers
       integer max_shells
       
-      parameter (max_centers = 300)
-      parameter (max_shells = 5000)
+      parameter (max_centers = 1000)
+      parameter (max_shells = 10000)
 
 c--------------------------------------------------------------------------
 c   Integral packages supported.

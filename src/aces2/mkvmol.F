@@ -67,6 +67,7 @@ C     it to act like it encountered a real error on reading the file.
 #include "linelen.par"
 #include "baslims.par"
 #include "molstrct.com"
+#include "coord.com"
 
       character*(*) BasName
 
@@ -98,7 +99,7 @@ CJDW  11/2/94. We now use IFLAGS2(108) to set TLA.
 C     Parameter (TLA = 1.D-9)
 CSSS      INTEGER SHELLANG,SHELLLOC,SHELLSIZ,SHELLPRM
 CSSS      INTEGER SHELLORB,SHOFFSET,PRIMORBT,PROFFSET
-      double precision geom(3*mxatms)
+      double precision geom(3*Natms)
 C
       LOGICAL XYZIN,NWFINDIF
       Logical Opn,bad123, GENBAS

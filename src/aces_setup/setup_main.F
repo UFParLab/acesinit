@@ -38,15 +38,15 @@ c      parameter (mxcbf = 500)
       integer (C_INT) nsegs 
       integer (C_INT) c_nshells  
 
-c      integer (C_INT) maxmem 
+c     integer (C_INT) maxmem 
       integer (C_INT) nsial 
       integer (C_INT) val0
-c      integer (C_INT) nd
-      integer (C_INT) d(6)
-      integer (C_INT) d2(2)
+c     integer (C_INT) nd
+c     integer (C_INT) d(6)
+c     integer (C_INT) d2(2)
       integer (C_INT) dd(max_segments)
       integer (C_INT) sDim2(2), sDim1(1), sDims(8)
-      real (C_DOUBLE) sVals(mxcbf,mxcbf)
+c     real (C_DOUBLE) sVals(mxcbf,mxcbf)
       real (C_DOUBLE) cVals(3,mxatms)
       real (C_DOUBLE) sVals1(mxcbf)
       integer (C_INT) iVals1(mxcbf)
@@ -327,6 +327,7 @@ c-------------------------------------------------------------------------------
       call set_nbvirt_segs(nbfvirt, nbeta_occupied, nbeta_virtual, 
      *                     sip_mx_virt_segsize) 
       call shells_to_segments(sip_mx_ao_segsize, segs, nsegs, .false.)
+      nfrags = 1 
       endif 
 
 
@@ -381,6 +382,9 @@ c     enddo
             norbs = norbs + 1 
             dd(norbs) = eaocc_frag(kfrag,i) - baocc_frag(kfrag,i) +1 
          enddo 
+      enddo 
+
+      do kfrag = 1, nfrags 
          do i = 1, n_avirt(kfrag) 
             norbs = norbs + 1 
             dd(norbs) = eavirt_frag(kfrag,i) - bavirt_frag(kfrag,i)+1  
@@ -403,6 +407,7 @@ c     enddo
       sDim1(1) = norbs     
       do i = 1, sDim1(1)
          iVals1(i) = dd(i)
+         write(6,*) ' moarange:', i, dd(i) 
       enddo
       call set_predefined_integer_array('moa_seg_ranges'//C_NULL_CHAR,1,
      *                                   sDim1, iVals1) 
@@ -413,7 +418,10 @@ c     enddo
             norbs = norbs + 1 
             dd(norbs) = ebocc_frag(kfrag,i) - bbocc_frag(kfrag,i) +1 
          enddo 
-         do i = 1, n_avirt(kfrag) 
+      enddo 
+
+      do kfrag = 1, nfrags 
+         do i = 1, n_bvirt(kfrag) 
             norbs = norbs + 1 
             dd(norbs) = ebvirt_frag(kfrag,i) - bbvirt_frag(kfrag,i)+1  
          enddo 
@@ -440,6 +448,12 @@ c-------------------------------------------------------------------------------
 c------------------------------------------------------------------------------------------  
 c                              Set the integer constants 
 c------------------------------------------------------------------------------------------  
+
+      write(6,*) ' NORB =', nsegs  
+      write(6,*) ' NAOOCC =', nafocc  
+      write(6,*) ' NBOOCC =', nbfocc  
+      write(6,*) ' NAFVIRT =', nafvirt    
+      write(6,*) ' NBFVIRT =', nbfvirt    
   
       val0 = nsegs 
       call set_constant('norb'//C_NULL_CHAR, val0)     ! Number of atomic orbital segments 
@@ -453,9 +467,9 @@ c-------------------------------------------------------------------------------
       call set_constant('eaocc'//C_NULL_CHAR, val0)    ! Ending alpha occupied  segment 
       val0 = 1 ! start segments at 1 
       call set_constant('bbocc'//C_NULL_CHAR, val0)    ! Beginning beta occupied segment  
-      val0 = nafocc  
+      val0 = nbfocc  
       call set_constant('ebocc'//C_NULL_CHAR, val0)    ! Ending beta occupied  segment 
-      val0 = nafocc + 1 
+      val0 = nbfocc + 1 
       call set_constant('bavirt'//C_NULL_CHAR, val0)   ! Beginning alpha virtual segment  
       val0 = nafocc + nafvirt  
       call set_constant('eavirt'//C_NULL_CHAR, val0)   ! Ending alpha virtual segment  
@@ -525,65 +539,60 @@ c-------------------------------------------------------------------------------
       do i = 1, sDim1(1) 
          sVals1(i) = 0.0 
       enddo 
-      call set_predefined_scalar_array('e'//C_NULL_CHAR, 1,Sdim1,sVals1)
-      call set_predefined_scalar_array('ea'//C_NULL_CHAR,1,Sdim1,sVals1)
-      call set_predefined_scalar_array('eb'//C_NULL_CHAR,1,Sdim1,sVals1)
+c     call set_predefined_scalar_array('e'//C_NULL_CHAR,  1, Sdim1, sVals1)
+c     call set_predefined_scalar_array('ea'//C_NULL_CHAR, 1, Sdim1, sVals1)
+c     call set_predefined_scalar_array('eb'//C_NULL_CHAR, 1, Sdim1, sVals1)
 
-      sDim2(1) = segs(nsegs)  
-      sDim2(2) = nalpha_occupied + nalpha_virtual  
-      do i = 1, sDim1(1) 
-      do j = 1, sDim2(2) 
-         sVals(i,j) = 0.0 
-      enddo 
-      enddo 
-      call set_predefined_scalar_array('c'//C_NULL_CHAR, 2,sDim2,sVals)
-      call set_predefined_scalar_array('ca'//C_NULL_CHAR,2,sDim2,sVals)
+c     sDim2(1) = segs(nsegs)  
+c     sDim2(2) = nalpha_occupied + nalpha_virtual  
+c     do i = 1, sDim1(1) 
+c     do j = 1, sDim2(2) 
+c        sVals(i,j) = 0.0 
+c     enddo 
+c     enddo 
+c     call set_predefined_scalar_array('c'//C_NULL_CHAR,  2, sDim2, sVals)
+c     call set_predefined_scalar_array('ca'//C_NULL_CHAR, 2, sDim2, sVals)
 
-      sDim2(1) = segs(nsegs)  
-      sDim2(2) = nbeta_occupied + nbeta_virtual  
-      do i = 1, sDim2(1) 
-      do j = 1, sDim2(2) 
-         sVals(i,j) = 0.0 
-      enddo 
-      enddo 
-      call set_predefined_scalar_array('cb'//C_NULL_CHAR,2,sDim2,sVals)
-
-
-      sDim2(1) = nalpha_occupied + nalpha_virtual  
-      sDim2(2) = nalpha_occupied + nalpha_virtual  
-      do i = 1, sDim2(1) 
-      do j = 1, sDim2(2) 
-         sVals(i,j) = 0.0 
-      enddo 
-      enddo 
-      call set_predefined_scalar_array('fock_a'//C_NULL_CHAR, 
-     *                                                  2, sDim2, sVals)
+c     sDim2(1) = segs(nsegs)  
+c     sDim2(2) = nbeta_occupied + nbeta_virtual  
+c     do i = 1, sDim2(1) 
+c     do j = 1, sDim2(2) 
+c        sVals(i,j) = 0.0 
+c     enddo 
+c     enddo 
+c     call set_predefined_scalar_array('cb'//C_NULL_CHAR, 2, sDim2, sVals)
 
 
-      sDim2(1) = nbeta_occupied + nbeta_virtual  
-      sDim2(2) = nbeta_occupied + nbeta_virtual  
-      do i = 1, sDim2(1) 
-      do j = 1, sDim2(2) 
-         sVals(i,j) = 0.0 
-      enddo 
-      enddo 
-      call set_predefined_scalar_array('fock_b'//C_NULL_CHAR, 
-     *                                                   2, sDim2,sVals)
+c     sDim2(1) = nalpha_occupied + nalpha_virtual  
+c     sDim2(2) = nalpha_occupied + nalpha_virtual  
+c     do i = 1, sDim2(1) 
+c     do j = 1, sDim2(2) 
+c        sVals(i,j) = 0.0 
+c     enddo 
+c     enddo 
+c     call set_predefined_scalar_array('fock_a'//C_NULL_CHAR, 2, sDim2, sVals)
 
 
-      sDim2(1) = segs(nsegs)  
-      sDim2(2) = segs(nsegs)  
-      do i = 1, sDim2(1) 
-      do j = 1, sDim2(2) 
-         sVals(i,j) = 0.0 
-      enddo 
-      enddo 
-      call set_predefined_scalar_array('oed_nai'//C_NULL_CHAR,2,
-     *                                                   sDim2,sVals)
-      call set_predefined_scalar_array('oed_kin'//C_NULL_CHAR,2,
-     *                                                    sDim2,sVals)
-      call set_predefined_scalar_array('oed_ovl'//C_NULL_CHAR,2,
-     *                                                    sDim2,sVals)
+c     sDim2(1) = nbeta_occupied + nbeta_virtual  
+c     sDim2(2) = nbeta_occupied + nbeta_virtual  
+c     do i = 1, sDim2(1) 
+c     do j = 1, sDim2(2) 
+c        sVals(i,j) = 0.0 
+c     enddo 
+c     enddo 
+c     call set_predefined_scalar_array('fock_b'//C_NULL_CHAR, 2, sDim2, sVals)
+
+
+c     sDim2(1) = segs(nsegs)  
+c     sDim2(2) = segs(nsegs)  
+c     do i = 1, sDim2(1) 
+c     do j = 1, sDim2(2) 
+c        sVals(i,j) = 0.0 
+c     enddo 
+c     enddo 
+c     call set_predefined_scalar_array('oed_nai'//C_NULL_CHAR, 2, sDim2, sVals)
+c     call set_predefined_scalar_array('oed_kin'//C_NULL_CHAR, 2, sDim2, sVals)
+c     call set_predefined_scalar_array('oed_ovl'//C_NULL_CHAR, 2, sDim2, sVals)
 
       val0 = ntot_alpha
       call set_constant('nalphas'//C_NULL_CHAR, val0)  ! Number of coefficients in basis
@@ -601,28 +610,32 @@ c-------------------------------------------------------------------------------
          write(6,*) i, talpha(i), sVals1(i) 
       enddo
       call set_predefined_scalar_array('alphas'//C_NULL_CHAR,
-     *                                          1,sDim1,sVals1)
+     *                                           1,sDim1,sVals1)
 
       sDim1(1) = ntot_pcoef
       do i = 1, sDim1(1)
          sVals1(i) = tpcoeff(i)
       enddo
       call set_predefined_scalar_array('pcoeffs'//C_NULL_CHAR,
-     *                                           1,sDim1,sVals1)
+     *                                            1,sDim1,sVals1)
 
       sDim1(1) = ntot_shells
+      write(6,*) ' IXALPHS ' 
       do i = 1, sDim1(1)
          iVals1(i) = tixalpha(i)
+         write(6,*) i, tixalpha(i) 
       enddo
       call set_predefined_integer_array('ixalphas'//C_NULL_CHAR,
-     *                                          1, sDim1, iVals1)
+     *                                  1,sDim1, iVals1)
 
       sDim1(1) = ntot_shells
+      write(6,*) ' IXCOEFFS ' 
       do i = 1, sDim1(1)
          iVals1(i) = tixpcoeff(i)
+         write(6,*) i, iVals1(i) 
       enddo
       call set_predefined_integer_array('ixpcoeffs'//C_NULL_CHAR,1,
-     *                                                  sDim1, iVals1)
+     *                                   sDim1, iVals1)
 
 c Array containg atomic coordinates 
 
@@ -640,7 +653,7 @@ c Array containg atomic coordinates
       enddo 
       enddo 
       call set_predefined_scalar_array('coords'//C_NULL_CHAR,
-     *                                           2,sDim2,cVals)
+     *                                                2,sDim2,cVals)
 
       sDim2(1) = 3
       sDim2(2) = nshells  
@@ -652,11 +665,11 @@ c Array containg atomic coordinates
       write(6,*) ' TCOORDS:' 
       do i = 1, sDim2(1) 
       do j = 1, sDim2(2) 
-         write(6,*) '  ', i, j, cVals(i,j) 
+         write(6,*) '  ', i, j, tcoord(i,j), cVals(i,j) 
       enddo 
       enddo 
       call set_predefined_scalar_array('tcoords'//C_NULL_CHAR,
-     *                                              2,sDim2,cVals)
+     *                                               2,sDim2,cVals)
 
 
 c Form the arrays ccbeg and ccend and indx_cc  
@@ -688,7 +701,7 @@ c Form the arrays ccbeg and ccend and indx_cc
       call set_predefined_integer_array('indx_cc'//C_NULL_CHAR,1,sDim1,
      *                                   iVals1)
 
-c Form the arrays end_nfps, ncfps, npfps, ivangmom  
+c Form the arrays end_nfps, ncfps, npfps, ivangmom, atom[map of atoms to shells] 
 
       sDim1(1) = nshells   
       do i = 1, sDim1(1)
@@ -710,6 +723,11 @@ c Form the arrays end_nfps, ncfps, npfps, ivangmom
          iVals1(i) = ivangmom(i)
       enddo
       call set_predefined_integer_array('ivangmom'//C_NULL_CHAR,1,sDim1,
+     *                                   iVals1)
+      do i = 1, sDim1(1)
+         iVals1(i) = atom(i)
+      enddo
+      call set_predefined_integer_array('atom'//C_NULL_CHAR,1,sDim1,
      *                                   iVals1)
 
 c Set end_nfps, ncfps, npfps  
@@ -742,7 +760,7 @@ c     if (.not. ispherical) intSpherical = 0
          write(6,*) i, sVals1(i) 
       enddo
       call set_predefined_scalar_array('charge'//C_NULL_CHAR,
-     *                                              1,sDim1,sVals1)
+     *                                           1,sDim1,sVals1)
 
 c Set the maximum number of integral Shells  
       call set_constant('max_shells'//C_NULL_CHAR,max_shells) 
@@ -757,15 +775,29 @@ c    *                            fockrohf_b)
 c *************************************************************************
 c Set the parameters defining the fragment calculation. 
 c *************************************************************************
+      if (.not. frag_calc) nfrags = 0  
       call set_constant('nfrags'//C_NULL_CHAR,nfrags) 
 
+      write(6,*) ' NFRAGS = ', nfrags 
+      if (frag_calc) then 
+      do i = 1, nfrags
+         write(6,*) i, natoms_frag(i) 
+      enddo 
       sDim1(1) = nfrags  
       call set_predefined_integer_array('natoms_frag'//C_NULL_CHAR,1,
      *                                  sDim1, natoms_frag)
-      sDim2(1) = nfrags  
-      sDim2(2) = 1  
-      do i = 1, nfrags 
-         if (natoms_frag(i) .gt. sDim2(2)) sDim2(2) = natoms_frag(i) 
+      sDim2(1) = maxfrag  
+      sDim2(2) = maxapf   
+c     sDim2(1) = nfrags  
+c     sDim2(2) = 1  
+c     do i = 1, nfrags 
+c        if (natoms_frag(i) .gt. sDim2(2)) sDim2(2) = natoms_frag(i) 
+c     enddo   
+      write(6,*) ' WATOM_FRAG ', sDim2(1), sDim2(2)  
+      do j = 1, sDim2(2)  
+      do i = 1, sDim2(1)  
+         write(6,*) '  ', i, j , watom_frag(i,j) 
+      enddo   
       enddo   
       call set_predefined_integer_array('watom_frag'//C_NULL_CHAR,2,
      *                                  sDim2, watom_frag)
@@ -828,7 +860,7 @@ c *************************************************************************
      *                                  sDim1, w_frag_AO)
 
       sDim1(1) = n_a_occ   
-      write(6,*) ' moocc_SEGS = ', sDim1(1)  
+      write(6,*) ' noocc_SEGS = ', sDim1(1)  
       call set_predefined_integer_array('w_frag_occ'//C_NULL_CHAR,1,
      *                                  sDim1, w_frag_occ)
 
@@ -859,6 +891,7 @@ c *************************************************************************
      *                                  sDim1, w_frag_bvirt)
 
       write(6,*) ' Done second set of fragment predefined arrays ' 
+      endif ! frag_calc
 
 c *************************************************************************
 c Done Setting the parameters defining the fragment calculation. 

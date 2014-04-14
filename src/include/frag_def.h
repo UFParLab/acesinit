@@ -2,7 +2,7 @@
        integer maxfrag, maxapf, maxsegs 
        parameter (maxfrag = 1000)  
        parameter (maxapf  = 100)  
-       parameter (maxsegs = 1000)  
+       parameter (maxsegs = 10000)  
         
        logical frag_calc
        integer nfrags, natoms_frag, watom_frag

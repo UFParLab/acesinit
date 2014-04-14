@@ -9,7 +9,7 @@ c VMOL PARAMETERS ------------------------------------------------------
 
 C     MAXPRIM - Maximum number of primitives for a given shell.
       INTEGER    MAXPRIM
-      PARAMETER (MAXPRIM=72)
+      PARAMETER (MAXPRIM=72) ! VFL 
 
 C     MAXFNC  - Maximum number of contracted functions for a given shell.
 C               (vmol/readin requires this to be the same as MAXPRIM)
@@ -37,7 +37,7 @@ C               all symmetry inequivalent centers.
 C     MXTNSH  - Maximum total number of shells for all symmetry
 C               inequivalent centers.
       INTEGER    MXTNSH
-      PARAMETER (MXTNSH=500)
+      PARAMETER (MXTNSH=25000)
 
 C     MXCBF   - Maximum number of Cartesian basis functions for the
 C               whole system (NOT the number of contracted functions).

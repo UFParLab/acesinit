@@ -3,7 +3,7 @@
      *              enalpha_occupied, enbeta_occupied
 
       integer max_basis
-      parameter (max_basis = 2000)
+      parameter (max_basis = 10000)
       integer modrop_a(max_basis)
       integer modrop_b(max_basis)
       integer moamap(max_basis)

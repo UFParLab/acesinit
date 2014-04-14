@@ -38,10 +38,10 @@ C atoms times maximum number of shells. Ajith Perera, 11/07.
 C
       DIMENSION ISHELTP2(mxatms*mxshel),ISHELSZ2(mxatms*mxshel)
 C
-      IF(NTOTATOM.GT.200)THEN
-       WRITE(6,1000)
-       CALL ERREX
-      ENDIF
+c     IF(NTOTATOM.GT.200)THEN
+c      WRITE(6,1000)
+c      CALL ERREX
+c     ENDIF
 C
       CALL IGETREC(20,'JOBARC','ZMAT2MOL',NTOTATOM,IZMT2MOL)
 #ifdef _DEBUG_LVLM1
@@ -65,10 +65,12 @@ C GET SHELL INFORMATION FOR THIS ATOM
 C
         NSHELL=INUMSHEL(IMOL)
         IOFFMOL=ISHLOFF(IMOL)
-        if (IOFFZMAT+NSHELL.gt.5000) then
+cVFL 4/7/2014        if (IOFFZMAT+NSHELL.gt.5000) then
+        if (IOFFZMAT+NSHELL.gt.mxshel) then
            print *, '@SHELLINF: Assertion failed.'
-           print *, '           maximum number of shells = 5000'
+           print *, '           maximum number of shells = ', mxshel 
            print *, '           require at least ',IOFFZMAT+NSHELL
+           print *,'            NSHELL = ', nshell 
            call errex
         end if
         CALL ICOPY(NSHELL,ISHELTP(IOFFMOL),1,ISHELTP2(IOFFZMAT),1)
@@ -88,15 +90,15 @@ C
 C
       NSHELTOT=IOFFZMAT-1
 C
-      IF(NSHELTOT.GT.500)THEN
-       WRITE(6,1020) NSHELTOT
-       CALL ERREX
-      ENDIF
+c     IF(NSHELTOT.GT.500)THEN
+c      WRITE(6,1020) NSHELTOT
+c      CALL ERREX
+c     ENDIF
 C
 #ifdef _DEBUG_LVLM1
       Print*, "+++++++++++++++++", NSHELTOT
       Print*, "ISHELTP", (ISHELTP2(I), I=1, NTOTSHEL)
-      Print*, "ISHELSZ", (ISHELSZ2(I), I=1, NTOTSHEL)                          
+      Print*, "ISHELSZ", (ISHELSZ2(I), I=1, NTOTSHEL)     
 #endif
 C
       CALL IPUTREC(20,'JOBARC','FULSHLNM',1,NSHELTOT)
