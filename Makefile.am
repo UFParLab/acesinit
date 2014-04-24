@@ -1,7 +1,7 @@
 include $(top_srcdir)/aminclude.am
 EXTRA_DIST = doxygen.cfg
 
-bin_PROGRAMS=acesinit
+bin_PROGRAMS=acesinit init_file_print
 
 AM_LDFLAGS=\
 $(FLIBS)\
@@ -499,7 +499,7 @@ src/aces_setup/setup_main.F
 
 acesinit_SOURCES = \
     	$(ACESINIT_SOURCEFILES)\
-	$(ACES_SETUPFILES)\
+		$(ACES_SETUPFILES)\
     	$(ACES_BASIS_FILES)\
     	$(ACESINIT_BLAS_SOURCEFILES)\
 	src/aces_setup/setup_main_entry.c
@@ -508,4 +508,8 @@ acesinit_LDFLAGS = \
 	$(FLIBS)\
 	$(FCLIBS)
 
+init_file_print_SOURCES=\
+	$(ACES_SETUPFILES)\
+	$(ACES_BASIS_FILES)\
+	src/utils/init_file_print_main.cpp
 

@@ -139,7 +139,7 @@ void SetupReader::dump_data() {
 }
 
 void SetupReader::dump_data(std::ostream& os) {
-	std::cout << this;
+	std::cout << *this;
 }
 
 int SetupReader::predefined_int(std::string name) {

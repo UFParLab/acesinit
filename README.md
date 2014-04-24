@@ -44,3 +44,8 @@ The default_jobflows file contains "jobs" or sets of SIAL files to be run one af
 In this directory, run the acesinit file.
 The generated ```data.dat``` binary file contains initialization data for aces4.
 
+Utility
+-------
+The "init_file_print" executable can be used to dump the contents of an initialization file to screen. Example usage : ```./init_file_print data.dat```.
+
+
