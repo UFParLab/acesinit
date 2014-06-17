@@ -502,6 +502,15 @@ c-------------------------------------------------------------------------------
       call set_constant('scf_hist'//C_NULL_CHAR, val0)   ! Number of histories to use in the SCF DIIS  
       call set_constant('fromvar'//C_NULL_CHAR, nd)      ! ????  
 
+
+      val0 = eom_tol
+      call set_constant('eom_tol'//C_NULL_CHAR, val0)     ! eom convergence threshold
+      val0 = eom_roots
+      call set_constant('eom_roots'//C_NULL_CHAR, val0)   ! number of EOM roots
+      val0 = eom_roots*3
+      call set_constant('eom_subspc'//C_NULL_CHAR, val0)  ! size of davidson subspace collapse 
+
+C
       write(6,*) ' Done setting integer constants ' 
 
 c     if (ignore_dropmo) then 
