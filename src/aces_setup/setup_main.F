@@ -502,6 +502,15 @@ c-------------------------------------------------------------------------------
       call set_constant('scf_hist'//C_NULL_CHAR, val0)   ! Number of histories to use in the SCF DIIS  
       call set_constant('fromvar'//C_NULL_CHAR, nd)      ! ????  
 
+
+      val0 = eom_tol
+      call set_constant('eom_tol'//C_NULL_CHAR, val0)     ! eom convergence threshold
+      val0 = eom_roots
+      call set_constant('eom_roots'//C_NULL_CHAR, val0)   ! number of EOM roots
+      val0 = eom_roots*3
+      call set_constant('eom_subspc'//C_NULL_CHAR, val0)  ! size of davidson subspace collapse 
+
+C
       write(6,*) ' Done setting integer constants ' 
 
 c     if (ignore_dropmo) then 
@@ -775,123 +784,8 @@ c    *                            fockrohf_b)
 c *************************************************************************
 c Set the parameters defining the fragment calculation. 
 c *************************************************************************
-      if (.not. frag_calc) nfrags = 0  
+      nfrags = 0  
       call set_constant('nfrags'//C_NULL_CHAR,nfrags) 
-
-      write(6,*) ' NFRAGS = ', nfrags 
-      if (frag_calc) then 
-      do i = 1, nfrags
-         write(6,*) i, natoms_frag(i) 
-      enddo 
-      sDim1(1) = nfrags  
-      call set_predefined_integer_array('natoms_frag'//C_NULL_CHAR,1,
-     *                                  sDim1, natoms_frag)
-      sDim2(1) = maxfrag  
-      sDim2(2) = maxapf   
-c     sDim2(1) = nfrags  
-c     sDim2(2) = 1  
-c     do i = 1, nfrags 
-c        if (natoms_frag(i) .gt. sDim2(2)) sDim2(2) = natoms_frag(i) 
-c     enddo   
-      write(6,*) ' WATOM_FRAG ', sDim2(1), sDim2(2)  
-      do j = 1, sDim2(2)  
-      do i = 1, sDim2(1)  
-         write(6,*) '  ', i, j , watom_frag(i,j) 
-      enddo   
-      enddo   
-      call set_predefined_integer_array('watom_frag'//C_NULL_CHAR,2,
-     *                                  sDim2, watom_frag)
-      call set_predefined_integer_array('fragAO'//C_NULL_CHAR,1,
-     *                                  sDim1, fragAO)
-      call set_predefined_integer_array('n_occ'//C_NULL_CHAR,1,
-     *                                  sDim1, n_occ)
-      call set_predefined_integer_array('n_aocc'//C_NULL_CHAR,1,
-     *                                  sDim1, n_aocc)
-      call set_predefined_integer_array('n_bocc'//C_NULL_CHAR,1,
-     *                                  sDim1, n_bocc)
-      call set_predefined_integer_array('n_virt'//C_NULL_CHAR,1,
-     *                                  sDim1, n_virt)
-      call set_predefined_integer_array('n_avirt'//C_NULL_CHAR,1,
-     *                                  sDim1, n_avirt)
-      call set_predefined_integer_array('n_bvirt'//C_NULL_CHAR,1,
-     *                                  sDim1, n_bvirt)
-
-      call set_predefined_integer_array('bocc_frag'//C_NULL_CHAR,2,
-     *                                  sDim2, bocc_frag)
-      call set_predefined_integer_array('baocc_frag'//C_NULL_CHAR,2,
-     *                                  sDim2, baocc_frag)
-      call set_predefined_integer_array('bbocc_frag'//C_NULL_CHAR,2,
-     *                                  sDim2, bbocc_frag)
-      call set_predefined_integer_array('eocc_frag'//C_NULL_CHAR,2,
-     *                                  sDim2, eocc_frag)
-      call set_predefined_integer_array('eaocc_frag'//C_NULL_CHAR,2,
-     *                                  sDim2, eaocc_frag)
-      call set_predefined_integer_array('ebocc_frag'//C_NULL_CHAR,2,
-     *                                  sDim2, ebocc_frag)
-      call set_predefined_integer_array('bvirt_frag'//C_NULL_CHAR,2,
-     *                                  sDim2, bvirt_frag)
-      call set_predefined_integer_array('bavirt_frag'//C_NULL_CHAR,2,
-     *                                  sDim2, bavirt_frag)
-      call set_predefined_integer_array('bbvirt_frag'//C_NULL_CHAR,2,
-     *                                  sDim2, bbvirt_frag)
-      call set_predefined_integer_array('evirt_frag'//C_NULL_CHAR,2,
-     *                                  sDim2, evirt_frag)
-      call set_predefined_integer_array('eavirt_frag'//C_NULL_CHAR,2,
-     *                                  sDim2, eavirt_frag)
-      call set_predefined_integer_array('ebvirt_frag'//C_NULL_CHAR,2,
-     *                                  sDim2, ebvirt_frag)
-
-      write(6,*) ' Done first set of fragment predefined arrays ' 
-
-       n_a_occ = 0 
-       n_b_occ = 0 
-       n_a_virt = 0 
-       n_b_virt = 0 
-       do i = 1, nfrags 
-          n_a_occ = n_a_occ + n_aocc(i) 
-          n_b_occ = n_b_occ + n_bocc(i) 
-          n_a_virt = n_a_virt + n_avirt(i) 
-          n_b_virt = n_b_virt + n_bvirt(i) 
-       enddo 
-
-      sDim1(1) = nsegs     
-      write(6,*) ' AO_SEGS = ', sDim1(1)  
-      call set_predefined_integer_array('w_frag_ao'//C_NULL_CHAR,1,
-     *                                  sDim1, w_frag_AO)
-
-      sDim1(1) = n_a_occ   
-      write(6,*) ' noocc_SEGS = ', sDim1(1)  
-      call set_predefined_integer_array('w_frag_occ'//C_NULL_CHAR,1,
-     *                                  sDim1, w_frag_occ)
-
-      sDim1(1) = n_a_occ     
-      write(6,*) ' naocc_SEGS = ', sDim1(1)  
-      call set_predefined_integer_array('w_frag_aocc'//C_NULL_CHAR,1,
-     *                                  sDim1, w_frag_aocc)
-
-      sDim1(1) = n_b_occ     
-      write(6,*) ' nbocc_SEGS = ', sDim1(1)  
-      call set_predefined_integer_array('w_frag_bocc'//C_NULL_CHAR,1,
-     *                                  sDim1, w_frag_bocc)
-
-      sDim1(1) = n_a_virt     
-      write(6,*) ' nvirt_SEGS = ', sDim1(1)  
-      call set_predefined_integer_array('w_frag_virt'//C_NULL_CHAR,1,
-
-     *                                  sDim1, w_frag_virt)
-      sDim1(1) = n_a_virt  
-      write(6,*) ' navirt_SEGS = ', sDim1(1)  
-
-      call set_predefined_integer_array('w_frag_avirt'//C_NULL_CHAR,1,
-     *                                  sDim1, w_frag_avirt)
-
-      sDim1(1) = n_b_virt     
-      write(6,*) ' nbvirt_SEGS = ', sDim1(1)  
-      call set_predefined_integer_array('w_frag_bvirt'//C_NULL_CHAR,1,
-     *                                  sDim1, w_frag_bvirt)
-
-      write(6,*) ' Done second set of fragment predefined arrays ' 
-      endif ! frag_calc
 
 c *************************************************************************
 c Done Setting the parameters defining the fragment calculation. 
