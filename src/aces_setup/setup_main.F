@@ -503,8 +503,8 @@ c-------------------------------------------------------------------------------
       call set_constant('fromvar'//C_NULL_CHAR, nd)      ! ????  
 
 
-      val0 = eom_tol
-      call set_constant('eom_tol'//C_NULL_CHAR, val0)     ! eom convergence threshold
+      dval = eom_tol
+      call set_scalar('eom_tol'//C_NULL_CHAR, dval)     ! eom convergence threshold
       val0 = eom_roots
       call set_constant('eom_roots'//C_NULL_CHAR, val0)   ! number of EOM roots
       val0 = eom_roots*3
