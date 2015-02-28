@@ -26,6 +26,14 @@ make
 ```
 This should create the ```acesinit``` executable.
 
+An alternative is to use CMake
+```BASH
+mkdir BUILD
+cd BUILD
+cmake ../
+make 
+```
+
 To Use
 ------
 Copy all the files in ```src/test``` and the ```acesinit``` executable to a separate directory. This folder should contain these files:
