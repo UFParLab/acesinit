@@ -772,6 +772,7 @@ c---------Basis linear dependency threshold-----------------------------
             endif
 
 c---------Integral threshold--------------------------------------------
+            intgrl_tol = 12
             if (iASV.eq.h_IOPPAR_intgrl_tol) then
             intgrl_tol = ioppar(h_IOPPAR_intgrl_tol)
             goto 101

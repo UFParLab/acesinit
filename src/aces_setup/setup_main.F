@@ -21,6 +21,7 @@ c      program setup_main
       include 'sial_config_params.h'
       include 'basis_info.h'
       include 'mxatms.par'
+      include 'scflindep.h'
 
       integer max_segments, mxcbf  
       parameter (max_segments = 1000000)
@@ -502,6 +503,8 @@ c-------------------------------------------------------------------------------
       call set_constant('scf_hist'//C_NULL_CHAR, val0)   ! Number of histories to use in the SCF DIIS  
       call set_constant('fromvar'//C_NULL_CHAR, nd)      ! ????  
 
+      call set_constant('lindep_tol'//C_NULL_CHAR, lindep_tol)
+      call set_constant('intgrl_tol'//C_NULL_CHAR, intgrl_tol)
 
       dval = eom_tol
       call set_scalar('eom_tol'//C_NULL_CHAR, dval)     ! eom convergence threshold
