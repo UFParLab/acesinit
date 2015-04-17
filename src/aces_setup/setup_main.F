@@ -21,7 +21,6 @@ c      program setup_main
       include 'sial_config_params.h'
       include 'basis_info.h'
       include 'mxatms.par'
-      include 'scflindep.h'
 
       integer max_segments, mxcbf  
       parameter (max_segments = 1000000)
@@ -776,6 +775,27 @@ c     if (.not. ispherical) intSpherical = 0
 
 c Set the maximum number of integral Shells  
       call set_constant('max_shells'//C_NULL_CHAR,max_shells) 
+
+C Write the number of basis functions (read and computed from the
+C MOL file. Notice that this does not account for drop-orbitals (which
+C in principle should be accounted for by nalpha_occupied,
+C nbeta_occupied and so on.
+     
+      call set_constant('nbasis_funcs'//C_NULL_CHAR,nbasis) 
+
+C The new key-tokens that deals with SCF convegence. These are all 
+C read from the input file and consistent with ACES II/III and now IV.
+
+      call set_constant('guess'//C_NULL_CHAR,guess) 
+      call set_constant('lshft_a1'//C_NULL_CHAR,guess) 
+      call set_constant('lshft_b1'//C_NULL_CHAR,guess) 
+      call set_constant('damp_type'//C_NULL_CHAR,guess) 
+      call set_constant('lock_orbocc'//C_NULL_CHAR,guess) 
+      call set_constant('lock_orbitals'//C_NULL_CHAR,guess) 
+      call set_constant('damp_tol'//C_NULL_CHAR,guess) 
+      call set_constant('damp_end'//C_NULL_CHAR,guess) 
+C
+C Added on 04/2005, Ajith Perera.
 
       write(6,*) ' Done setting predefined arrays ' 
 
