@@ -22,8 +22,6 @@ c-------------------------------------------------------------------------
       include 'int_gen_parms.h'
       include 'machine_types.h'
       include 'mxatms.par' 
-      include 'scflindep.h'
-
       integer ierr
       common /flags/ iflags
       integer iflags(100)

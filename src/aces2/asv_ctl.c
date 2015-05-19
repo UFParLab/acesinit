@@ -108,8 +108,8 @@ const ASV_nl_t ASV_nl[] =
 {/*5*/   "ISCFCV",	"SCF_C#ONV",	h_ICHAR_f_int,	7,	"(tol)"},
 {/*6*/   "IXFTOL",	"XFORM#_TOL",	h_ICHAR_f_int,	11,	"(tol)"},
 {/*7*/   "ICCCYC",	"CC_MAX#CYC",	h_ICHAR_f_int,	0,	"cycles"},
-{/*8*/   "ILINDP",	"LIN#DEP_TOL",	h_ICHAR_f_int,	8,	""},
-{/*9*/   "IRDOFM",	"RDO#",		h_ICHAR_handle,	-1,	""},
+{/*8*/   "ILINDP",      "LIN#DEP_TOL",  h_ICHAR_f_int,  8,      ""},
+{/*9*/   "IRDOFM",      "RDO#",         h_ICHAR_handle, -1,     ""},
 {/*10*/  "IRPP",	"SCF_EXTRAP#",	h_ICHAR_handle,	1,	""},
 {/*11*/  "IREFNC",	"REF#ERENCE",	h_ICHAR_handle,	0,	""},
 {/*12*/  "ICCEOR",	"CC_EXP#ORDER",	h_ICHAR_f_int,	0,	""},
@@ -678,7 +678,8 @@ void asv_handle_proc(const f_int * index, const char * value)
                 "LST",          /* 1 */
                 "QST",          /* 2 */
                 "CONSTRAINED",  /* 3 */
-                "COMBO"         /* 4 - reserved for QST/LST and constrained*/
+                "COMBO",       /* 4 - reserved for QST/LST and constrained*/
+                ""
             };
             asv_update_handle(index,value,handles);
             break;
