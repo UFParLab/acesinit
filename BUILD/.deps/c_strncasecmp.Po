@@ -1,0 +1,24 @@
+c_strncasecmp.o: ../src/aces2/c_strncasecmp.c /usr/include/strings.h \
+ /usr/include/features.h /usr/include/sys/cdefs.h /usr/include/bits/wordsize.h \
+ /usr/include/gnu/stubs.h /usr/include/bits/wordsize.h \
+ /usr/include/gnu/stubs-64.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.6/include/stddef.h /usr/include/xlocale.h \
+ ../src/include/f_types.h
+
+/usr/include/strings.h:
+
+/usr/include/features.h:
+
+/usr/include/sys/cdefs.h:
+
+/usr/include/bits/wordsize.h:
+
+/usr/include/gnu/stubs.h:
+
+/usr/include/gnu/stubs-64.h:
+
+/usr/lib/gcc/x86_64-redhat-linux/4.4.6/include/stddef.h:
+
+/usr/include/xlocale.h:
+
+../src/include/f_types.h:

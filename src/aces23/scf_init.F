@@ -30,7 +30,7 @@ c-------------------------------------------------------------------------
       integer nallproton, noff  
       integer dummy, i, nocc_present
       logical*8 l8false
-      integer ECP, NATOMS, ICRCOR(MxAtms) 
+      integer ECP, ICRCOR(MxAtms) 
       integer nallalpha_occupied, nallbeta_occupied 
       double precision vnn 
       double precision nuclear_nuclear_repulsion_energy
@@ -90,6 +90,7 @@ c---------------------------------------------------------------------------
 
       CALL IGETREC(20,'JOBARC','IFLAGS  ', 100, iflags)
       CALL IGETREC(20,'JOBARC','NMPROTON',1,NPROTON)
+      CALL IGETREC(20,'JOBARC','NREALATM',1,NATOMS)
 
 C--------------------------------------------------------------------------
 c   If this is an ECP calculation then we must modify NPROTON to obtain

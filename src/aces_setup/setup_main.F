@@ -41,6 +41,7 @@ c      parameter (mxcbf = 500)
 c     integer (C_INT) maxmem 
       integer (C_INT) nsial 
       integer (C_INT) val0
+      integer (C_INT) junk
 c     integer (C_INT) nd
 c     integer (C_INT) d(6)
 c     integer (C_INT) d2(2)
@@ -427,14 +428,15 @@ c     enddo
          enddo 
       enddo 
 
-c     do i = 1, norbs 
-c        write(6,*) ' NORBS DD :', norbs, dd(i) 
-c     enddo 
+C     do i = 1, norbs 
+C        write(6,*) ' NORBS DD :', norbs, dd(i) 
+C     enddo 
 
       call set_mobindex_info(norbs,dd)              ! MO beta index ranges. BOTH occupied and virtual 
       sDim1(1) = norbs     
       do i = 1, sDim1(1)
          iVals1(i) = dd(i)
+         Write(*,*) "mobrange:", i, dd(i)
       enddo
       call set_predefined_integer_array('mob_seg_ranges'//C_NULL_CHAR,1,
      *                                   sDim1, iVals1) 
@@ -492,7 +494,7 @@ c-------------------------------------------------------------------------------
       val0 = nbeta_occupied 
       call set_constant('nbocc'//C_NULL_CHAR, val0)      ! Number of beta occupied orbital   
 
-      val0 = scf_iter 
+      val0 = scf_iter
       call set_constant('scf_iter'//C_NULL_CHAR, val0)   ! Maximum number of scf iterations 
       val0 = cc_iter 
       call set_constant('cc_iter'//C_NULL_CHAR, val0)    ! Maximum number of cc/lambda iterations 
@@ -681,8 +683,6 @@ c Array containg atomic coordinates
       enddo 
       call set_predefined_scalar_array('tcoords'//C_NULL_CHAR,
      *                                               2,sDim2,cVals)
-
-
 c Form the arrays ccbeg and ccend and indx_cc  
 
       call setup_ccbeg(talpha, tixalpha, tpcoeff, tixpcoeff,
@@ -690,6 +690,9 @@ c Form the arrays ccbeg and ccend and indx_cc
      *                       indx_cc, icc) 
       write(6,*) ' CC_BEG '
       sDim1(1) = icc  
+
+      call set_constant('n_c_funcs'//C_NULL_CHAR,icc)
+
       do i = 1, sDim1(1)
          iVals1(i) = ccbeg(i)
          write(6,*) i, iVals1(i) 
@@ -786,18 +789,33 @@ C nbeta_occupied and so on.
 C The new key-tokens that deals with SCF convegence. These are all 
 C read from the input file and consistent with ACES II/III and now IV.
 
+C#ifdef _DEBUG_LVL0
+      Write(*,*)
+      Write(*,"(a)") "The predefined scalars in set_up_main.F"
+      Write(*,*)
+      Write(*,"(a,a,a,a)")"Guess,lshft_a1,lshft_b1,damp_type"
+      Write(*,"(4i4)") guess, lshft_a1, lshft_b1, damp_type
+      Write(*,"(a,a,a,a)")"lock_orbocc,lock_orbitals,damp_tol,damp_end"
+      Write(*,"(4i4)") lock_orbocc, lock_orbitals, damp_tol, damp_end
+      Write(*,"(a,a)")"diis_start,diss_order"
+      Write(*,"(2i4)") diis_start, diis_order 
+      Write(*,*) 
+C#endif 
       call set_constant('guess'//C_NULL_CHAR,guess) 
-      call set_constant('lshft_a1'//C_NULL_CHAR,guess) 
-      call set_constant('lshft_b1'//C_NULL_CHAR,guess) 
-      call set_constant('damp_type'//C_NULL_CHAR,guess) 
-      call set_constant('lock_orbocc'//C_NULL_CHAR,guess) 
-      call set_constant('lock_orbitals'//C_NULL_CHAR,guess) 
-      call set_constant('damp_tol'//C_NULL_CHAR,guess) 
-      call set_constant('damp_end'//C_NULL_CHAR,guess) 
+      call set_constant('lshft_a1'//C_NULL_CHAR,lshft_a1) 
+      call set_constant('lshft_b1'//C_NULL_CHAR,lshft_b1) 
+      call set_constant('damp_type'//C_NULL_CHAR,damp_type) 
+      call set_constant('lock_orbocc'//C_NULL_CHAR,damp_type) 
+      call set_constant('lock_orbitals'//C_NULL_CHAR,lock_orbitals) 
+      call set_constant('damp_tol'//C_NULL_CHAR,damp_tol) 
+      call set_constant('damp_end'//C_NULL_CHAR,damp_end) 
+      call set_constant('diis_start'//C_NULL_CHAR,diis_start) 
+      call set_constant('diis_order'//C_NULL_CHAR,diis_order) 
+      call set_constant('natoms'//C_NULL_CHAR,natoms) 
 C
 C Added on 04/2005, Ajith Perera.
 
-      write(6,*) ' Done setting predefined arrays ' 
+      write(6,*) ' Done setting second set of predefined arrays ' 
 
 c     call set_predefined_scalar_array('fockrohf_a'//C_NULL_CHAR, 2,
 c    *                            fockrohf_a)  

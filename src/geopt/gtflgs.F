@@ -182,7 +182,6 @@ c PARAMETERS
 #include "io_units.par"
 #include "fnamelen.par"
 #include "linelen.par"
-#include "scflindep.h"
       integer    dim_iflags,     dim_iflags2
       parameter (dim_iflags=100, dim_iflags2=500)
       INTEGER    nParam
@@ -326,8 +325,6 @@ c   o only print the logs and summaries on the first run
       else
          bVerbose = .true.
       end if
-
-      lindep_tol = 9 
 
 c   o nIrrps tracks the number of irreps in all of the user's value
 c     tokens. Originally, we would load COMPNIRR from JOBARC, but this
@@ -764,20 +761,23 @@ c         o BASIS
                end if
                goto 101
             end if
-
+C
+C These two variables are now get set in init_data.F along with the
+C other variables. 05/2014, Ajith Perera
+C
 c---------Basis linear dependency threshold-----------------------------
-            if (iASV.eq.h_IOPPAR_lindep_tol) then
-            lindep_tol = ioppar(h_IOPPAR_lindep_tol)
-            goto 101
-            endif
-
+C            if (iASV.eq.h_IOPPAR_lindep_tol) then
+C            lindep_tol = ioppar(h_IOPPAR_lindep_tol)
+C            goto 101
+C            endif
+C
 c---------Integral threshold--------------------------------------------
-            intgrl_tol = 12
-            if (iASV.eq.h_IOPPAR_intgrl_tol) then
-            intgrl_tol = ioppar(h_IOPPAR_intgrl_tol)
-            goto 101
-            endif
-
+C            intgrl_tol = 12
+C            if (iASV.eq.h_IOPPAR_intgrl_tol) then
+C            intgrl_tol = ioppar(h_IOPPAR_intgrl_tol)
+C            goto 101
+C            endif
+C
 c YAU - add a conditional for SUBGROUP that sets nIrrps
 
 c         o OCCUPATION

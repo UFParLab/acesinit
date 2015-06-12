@@ -125,12 +125,12 @@ c nContAOs : total number of contracted functions
       integer*8 i1e_sint, i1e_hint
       double precision scf_energy, totenerg
       double precision damp_init, cc_conv, scf_conv, bcc_conv
-      double precision guess, lshft_a1, lshft_b1, damp_type, damp_tol
-      double precision lindep_tol, lock_orbitals, intgrl_tol, damp_end
-      double precision lock_orbocc
+      integer guess, lshft_a1, lshft_b1, damp_type, damp_tol
+      integer lindep_tol, lock_orbitals, intgrl_tol, damp_end
+      integer lock_orbocc, diis_start, diis_order, natoms 
 
       double precision excite, eom_tol, eom_roots ! Watson Added
-      double precision  polarizability, a_tensor, g_tensor, d_tensor
+      integer polarizability, a_tensor, g_tensor, d_tensor
       double precision reg,stabvalue
 
       integer itrips, itripe
@@ -195,7 +195,9 @@ c nContAOs : total number of contracted functions
      &                     d_tensor, bcc_conv, guess, lshft_a1, 
      &                     lshft_b1, damp_type, damp_tol, lindep_tol,
      &                     lock_orbitals, lock_orbocc, intgrl_tol, 
-     &                     damp_end, last 
+     &                     damp_end, diis_start, diis_order,
+     &                     natoms, 
+     &                     last 
 
 
       logical managers_are_workers, master_is_worker

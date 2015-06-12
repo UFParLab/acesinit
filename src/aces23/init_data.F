@@ -42,7 +42,8 @@ C  in the file COPYRIGHT.
       integer          ieom_temprt, ieom_roots, iexcite    ! Watson Added
       integer          ipolarizability, ig_tensor, ia_tensor! perera Added
       integer          id_tensor                            ! perera Added
-      integer          iguess, ilshfta,  ilshftb
+      integer          iguess, ilshfta,  ilshftb, ibcc_conv
+      integer          idiis_start, idiis_order 
       integer          idamp_type, idamp_tol,ilindep_tol,ilock_orbitals 
       integer          iintgrl_tol, ilock_orbocc, idamp_end
       character*4      atmnam(max_centers)
@@ -252,25 +253,26 @@ C Ajith Perera for second-order properties; 04/2014.
        If (Ijunk(18) .EQ. 16) ig_tensor = 1
        If (ijunk(18) .EQ. 17) id_tensor = 1
   
-       polarizability = DBLE(iPolarizability)
-       a_tensor       = DBLE(ia_tensor)
-       g_tensor       = DBLE(ig_tensor)
-       d_tensor       = DBLE(id_tensor)
+       polarizability = iPolarizability
+       a_tensor       = ia_tensor
+       g_tensor       = ig_tensor
+       d_tensor       = id_tensor
 C
 C Ajith Perera, Bruecknere convergence criteria, 12/2014
-
-       bcc_conv =  10.0d0**(-ijunk(76))
+C
+        bcc_conv = ijunk(76)
+        bcc_conv  = 10.0d0**(-ibcc_conv)
 C 
 C Initial SCF orbitals, level shifting parameters and damping.
 C
         Iguess = ijunk(45)
-        guess  = DBLE(Iguess)
+        guess  = Iguess
 
         ilshfta = Iflags(111)
         ilshftb = Iflags(112)
 
-        lshft_a1 = DBLE(ilshfta)
-        lshft_b1 = DBLE(ilshftb)
+        lshft_a1 = ilshfta
+        lshft_b1 = ilshftb
 
         Idamp_type     = iflags(109)
         Idamp_tol      = iflags(110)
@@ -278,15 +280,19 @@ C
         Ilock_orbitals = iflags(160)
         Ilock_orbocc   = ijunk(41)
         Idamp_end      = iflags(161)
+        Idiis_start    = ijunk(40)
+        Idiis_order    = ijunk(20)
   
   
-        Damp_type     = DBLE(Idamp_type)
-        Damp_tol      = DBLE(Idamp_tol)
-        Lindep_tol    = DBLE(Ilindep_tol)
-        Lock_orbitals = DBLE(Ilock_orbitals)
-        Lock_orbocc   = DBLE(Ilock_orbocc)
-        Damp_end      = DBLE(Idamp_end)
-   
+        Damp_type     = Idamp_type
+        Damp_tol      = Idamp_tol
+        Lindep_tol    = Ilindep_tol
+        Lock_orbitals = Ilock_orbitals
+        Lock_orbocc   = Ilock_orbocc
+        Damp_end      = Idamp_end
+        Diis_start    = Idiis_start
+        Diis_order    = Idiis_order
+        
 c-------------------------------------------------------------------------
 c   Read IFLAGS2 off JOBARC.
 c-------------------------------------------------------------------------
