@@ -805,7 +805,7 @@ C#endif
       call set_constant('lshft_a1'//C_NULL_CHAR,lshft_a1) 
       call set_constant('lshft_b1'//C_NULL_CHAR,lshft_b1) 
       call set_constant('damp_type'//C_NULL_CHAR,damp_type) 
-      call set_constant('lock_orbocc'//C_NULL_CHAR,damp_type) 
+      call set_constant('lock_orbocc'//C_NULL_CHAR,lock_orbocc) 
       call set_constant('lock_orbitals'//C_NULL_CHAR,lock_orbitals) 
       call set_constant('damp_tol'//C_NULL_CHAR,damp_tol) 
       call set_constant('damp_end'//C_NULL_CHAR,damp_end) 
