@@ -18,7 +18,7 @@ C  in the file COPYRIGHT.
       include 'machine_types.h'
       include 'frag_def.h'
 
-      integer i, j, k, natoms, watom, nao, otemp    
+      integer i, j, k, watom, nao, otemp    
       integer dummy 
 
 c     logical frag_calc 

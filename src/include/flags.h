@@ -513,5 +513,8 @@
 #define h_IOPPAR_single_store	255
 #define h_IFLAGS2_single_store	155
 
+#define h_IOPPAR_opt_control    259
+#define h_IFLAGS2_opt_control   159
+
 #endif /* _FLAGS_H_ */
 

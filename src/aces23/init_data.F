@@ -1,4 +1,3 @@
-C  Copyright (c) 2003-2010 University of Florida
 C
 C  This program is free software; you can redistribute it and/or modify
 C  it under the terms of the GNU General Public License as published by
@@ -38,14 +37,20 @@ C  in the file COPYRIGHT.
       integer          naoatm(max_centers)
       integer          npop(max_centers)
       integer          ireorder(max_centers) 
-      integer          natoms
       integer          nscfa_fock, nscfb_fock
-      integer          ieom_temprt, ieom_roots, iexcite  ! Watson Added
+      integer          ieom_temprt, ieom_roots, iexcite    ! Watson Added
+      integer          ipolarizability, ig_tensor, ia_tensor! perera Added
+      integer          id_tensor                            ! perera Added
+      integer          iguess, ilshfta,  ilshftb, ibcc_conv
+      integer          idiis_start, idiis_order 
+      integer          idamp_type, idamp_tol,ilindep_tol,ilock_orbitals 
+      integer          iintgrl_tol, ilock_orbocc, idamp_end
       character*4      atmnam(max_centers)
       logical          cartesian
       logical          uhf
       logical dropit 
-      integer          ijunk(500)
+      integer          ijunk(100)
+      integer          iflags(500)
       logical*8        l8false
       double precision dbuf(1)
 #ifdef ALTIX
@@ -114,14 +119,14 @@ C---------------------------------------------------------------------------
      *               ix_hess, .true., ierr)
       if (ierr .ne. 0) then
          print *,'Error attempting to malloc hessian.'
-         STOP 
+         call abort_job ()
       endif 
 
       call mem_alloc(dbuf,  9*ncenters*ncenters, bytes_per_double, 
      *               ix_nnhess, .true., ierr)
       if (ierr .ne. 0) then
          print *,'Error attempting to malloc nuclear-nuclear hessian.'
-         STOP 
+         call abort_job ()
       endif 
 
       call nuclear_nuclear_gradient(dbuf(ix_hess), dbuf(ix_NNhess), 
@@ -143,7 +148,7 @@ c--------------------------------------------------------------------------
      *               .true., ierr)
       if (ierr .ne. 0) then
          print *,'Error attempting to malloc basis data.'
-         STOP 
+         call abort_job ()
       endif
 
       ialpha  = master_icoord + 3*nshells
@@ -166,6 +171,7 @@ c-------------------------------------------------------------------------
       noccupied       = nalpha_occupied
 
       call igetrec(1,'JOBARC','IFLAGS',100,iJunk)
+      call igetrec(1,'JOBARC','IFLAGS2',500,iflags)
 
 c------------------------------------------------------------------------
 c   Retrieve flags parameters.
@@ -197,10 +203,16 @@ c------------------------------------------------------------------------
       scf_beg  = ijunk(40)
 
 c     Kluggy way of dealing with this VFL 1/2/2013 
-      if (scf_beg .ge. 8) then 
-         write(6,*) ' Resetting scf_beg to 2 '
-         scf_beg = 2 
-      endif 
+C     No longer needed
+C      if (scf_beg .ge. 8) then 
+C         write(6,*) ' Resetting scf_beg to 2 '
+C         scf_beg = 2 
+C      endif 
+C    The integral tolerance is moved to here from scflindep.h
+C    Ajith Perera, 2/2015.
+C    
+      iintgrl_tol = iflags(108)
+      intgrl_tol  = iintgrl_tol
 
       vib_freq_calc = .false. 
       if (ijunk(54) .ne. 0) vib_freq_calc = .true.
@@ -228,7 +240,58 @@ C
 C
 C Watson
 C
+C Ajith Perera for second-order properties; 04/2014.
+  
+       iPolarizability = 0
+       ia_tensor = 0
+       ig_tensor = 0
+       id_tensor = 0
+       If (Ijunk(18) .EQ. 14 .OR. Ijunk(18) .EQ. 11) 
+     &     iPolarizability = 1
+       If (Ijunk(18) .EQ. 15 .OR. Ijunk(18) .EQ. 1) ia_tensor = 1
+       If (Ijunk(18) .EQ. 16) ig_tensor = 1
+       If (ijunk(18) .EQ. 17) id_tensor = 1
+  
+       polarizability = iPolarizability
+       a_tensor       = ia_tensor
+       g_tensor       = ig_tensor
+       d_tensor       = id_tensor
+C
+C Ajith Perera, Bruecknere convergence criteria, 12/2014
+C
+        bcc_conv = ijunk(76)
+        bcc_conv  = 10.0d0**(-ibcc_conv)
+C 
+C Initial SCF orbitals, level shifting parameters and damping.
+C
+        Iguess = ijunk(45)
+        guess  = Iguess
 
+        ilshfta = Iflags(111)
+        ilshftb = Iflags(112)
+
+        lshft_a1 = ilshfta
+        lshft_b1 = ilshftb
+
+        Idamp_type     = iflags(109)
+        Idamp_tol      = iflags(110)
+        Ilindep_tol    = ijunk(8)
+        Ilock_orbitals = iflags(160)
+        Ilock_orbocc   = ijunk(41)
+        Idamp_end      = iflags(161)
+        Idiis_start    = ijunk(40)
+        Idiis_order    = ijunk(20)
+  
+  
+        Damp_type     = Idamp_type
+        Damp_tol      = Idamp_tol
+        Lindep_tol    = Ilindep_tol
+        Lock_orbitals = Ilock_orbitals
+        Lock_orbocc   = Ilock_orbocc
+        Damp_end      = Idamp_end
+        Diis_start    = Idiis_start
+        Diis_order    = Idiis_order
+        
 c-------------------------------------------------------------------------
 c   Read IFLAGS2 off JOBARC.
 c-------------------------------------------------------------------------
@@ -591,6 +654,8 @@ C--------------------------------------------------------------------------
 c   Reset the number of virtual orbitals if they were dropped. 
 C--------------------------------------------------------------------------
 c
+C JNB: do not do virtual drop for fno sial program. 
+         if(.not. if_fno) then
          nalpha_virtual = nbasis - nalpha_occupied    
          enalpha_virtual = nalpha_virtual
          do i = 1, ndropmo_a 
@@ -604,6 +669,7 @@ c
             if (modrop_b(i) .gt. nbeta_occupied) 
      *      nbeta_virtual = nbeta_virtual - 1  
          enddo 
+         endif
 c
 C--------------------------------------------------------------------------
 c   Reset the number of occupied orbitals if they were dropped. 
