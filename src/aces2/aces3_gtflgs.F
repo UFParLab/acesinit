@@ -621,8 +621,8 @@ c   o print the ASV registration header
       end if
 
 c   o initialize flags to default values
-c      call asv_update_kv(achar(0),iASV,wrk,0)
-      call init_flags()
+      call asv_update_kv(achar(0),iASV,wrk,0)
+C      call init_flags()
       bHaveKeys = .false.
 
 c   o loop over the number of lines

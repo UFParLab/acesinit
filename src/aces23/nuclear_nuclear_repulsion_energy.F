@@ -12,7 +12,7 @@ C  GNU General Public License for more details.
 
 C  The GNU General Public License is included in this distribution
 C  in the file COPYRIGHT.
-      double precision function nuclear_nuclear_repulsion_energy(natoms)
+      double precision function nuclear_nuclear_repulsion_energy(iatoms)
 c---------------------------------------------------------------------------
 c   Returns the nuclear-nuclear repulsion energy of a system of atoms.
 c   The charge and geometry data is found in the NUCLEAR common block.
@@ -21,16 +21,16 @@ c---------------------------------------------------------------------------
       implicit none
       include 'int_gen_parms.h'
 
-      integer natoms
+      integer iatoms
       integer i, j
       double precision vnn, x, y, z, r
 
       write(6,*)  ' Computing the NN repulsion energy ' 
-      write(6,*) '  ', natoms, (charge(i), i=1, natoms) 
+      write(6,*) '  ', iatoms, (charge(i), i=1, iatoms) 
 
       VNN = 0.0D0
-      DO I = 1, natoms
-         DO J = I + 1, natoms
+      DO I = 1, iatoms
+         DO J = I + 1, iatoms
             X = acenter(I,1) - acenter(J,1)
             Y = acenter(I,2) - acenter(J,2)
             Z = acenter(I,3) - acenter(J,3)
