@@ -319,3 +319,93 @@ c     *            my_size,' for iseg ',iseg,' misfit = ',misfit
 
       return
       end
+
+      subroutine find_drop_seg(nocci,o_seg) 
+c
+      Implicit none 
+      integer nocci, nvirti, norbi, nproci  
+      real*8 nocc, nvirt, norb, nproc  
+
+      integer k, nmin, nmax, nb, wb(1000)  
+      integer nseg, neff, rem, best, rem_min   
+      integer o_seg,v_seg,n_seg 
+
+      nocc = nocci
+      nvirt = nvirti
+      norb = norbi
+      nproc = nproci
+c
+c nocc segmentation
+c ------------------ 
+c
+      nmin    = 10 
+      nmax    = 40  
+c
+c make sure range is applicable 
+c ----------------------------- 
+c
+5     continue 
+      if (nmin .ge. nocc) then 
+         nmin = nocc/2 
+         go to 5 
+         else 
+      endif 
+c
+6     continue 
+      if (nmax .ge. nocc) then 
+         nmax = nocc-1  
+         go to 6  
+         else 
+      endif 
+c 
+      rem_min = nmax 
+      best    = nmax 
+      nb      = 0 
+c
+      do k = nmax, nmin, -1  
+c
+         nseg = nocc/k 
+         neff = nseg*k 
+         rem  = nocc - neff 
+         if (rem .le. rem_min) then 
+            rem_min = rem 
+         endif 
+c
+      enddo 
+c
+      do k = nmax, nmin, -1  
+c
+         nseg = nocc/k 
+         neff = nseg*k 
+         rem  = nocc - neff 
+         if (rem .le. rem_min) then 
+            nb = nb + 1 
+            wb(nb) = k 
+            rem_min = rem 
+            go to 30 
+         endif 
+c
+      enddo 
+30    continue 
+c
+c ckeck if you like the result 
+c ---------------------------- 
+c
+      do k = wb(1), wb(1) + nmax 
+         nseg = nocc/wb(1)  
+         neff = nseg*k 
+         rem = nocc - neff  
+         if (rem .le. 0) then 
+            wb(1) = k 
+            o_seg = k 
+            go to 300 
+         endif 
+      enddo 
+
+300   continue 
+c
+c   Attempt to improve segmentation.
+c
+      call refine_segs(nocci, 20, 35, o_seg)
+      return
+      end 

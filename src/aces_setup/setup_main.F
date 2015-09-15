@@ -21,6 +21,7 @@ c      program setup_main
       include 'sial_config_params.h'
       include 'basis_info.h'
       include 'mxatms.par'
+      include 'dropmo.h'
 
       integer max_segments, mxcbf  
       parameter (max_segments = 1000000)
@@ -285,13 +286,13 @@ c                  If OCC or VIRT max segsize = 0 find default
 c------------------------------------------------------------------------------------------  
 
       stack_algorithm_type = 2 ! Default so that extra blocks allocated base on usage 
-      ignore_dropmo = .true.   ! Turns off dromo for now  
 100   continue 
-      if (ignore_dropmo) write(6,*) ' IGNORE DROPMO INITIALIZATION' 
-      if (.not. ignore_dropmo) write(6,*) ' DROPMO INITIALIZATION' 
+C      if (ignore_dropmo) write(6,*) ' IGNORE DROPMO INITIALIZATION' 
+C      if (.not. ignore_dropmo) write(6,*) ' DROPMO INITIALIZATION' 
 
 c   Initialize data: Read and store basis set information needed in the
 c   computation of oed and erd integrels. 
+      ignore_dropmo = .true.   ! Turns off dromo for now  
       call init_data() 
       call joda_prep() 
       call int_gen_init
@@ -320,6 +321,8 @@ c-------------------------------------------------------------------------------
       do i = 1, nshells 
          segs(i) = 0 
       enddo 
+      baocc_drop = 1
+      bbocc_drop = 1
       write(6,*) ' Nalpha occ virt = ', nalpha_occupied, nalpha_virtual 
       call set_naocc_segs(nafocc, nalpha_occupied, sip_mx_occ_segsize) 
       call set_nbocc_segs(nbfocc, nbeta_occupied, sip_mx_occ_segsize) 
@@ -463,11 +466,11 @@ c-------------------------------------------------------------------------------
       call set_constant('bocc'//C_NULL_CHAR, val0)     ! Beginning occupied segment  
       val0 = nafocc 
       call set_constant('eocc'//C_NULL_CHAR, val0)     ! Ending occupied  segment 
-      val0 = 1 ! start segments at 1 
+      val0 = baocc_drop ! start segments at 1 
       call set_constant('baocc'//C_NULL_CHAR, val0)    ! Beginning alpha occupied segment  
       val0 = nafocc  
       call set_constant('eaocc'//C_NULL_CHAR, val0)    ! Ending alpha occupied  segment 
-      val0 = 1 ! start segments at 1 
+      val0 = bbocc_drop ! start segments at 1 
       call set_constant('bbocc'//C_NULL_CHAR, val0)    ! Beginning beta occupied segment  
       val0 = nbfocc  
       call set_constant('ebocc'//C_NULL_CHAR, val0)    ! Ending beta occupied  segment 
@@ -617,10 +620,10 @@ c     call set_predefined_scalar_array('oed_ovl'//C_NULL_CHAR, 2, sDim2, sVals)
       call set_constant('ntotshells'//C_NULL_CHAR, val0)  ! Number of shells in basis
 
       sDim1(1) = ntot_alpha
-      write(6,*) ' ALPHAS into SVALS ' 
+C      write(6,*) ' ALPHAS into SVALS ' 
       do i = 1, sDim1(1)
          sVals1(i) = talpha(i)
-         write(6,*) i, talpha(i), sVals1(i) 
+C         write(6,*) i, talpha(i), sVals1(i) 
       enddo
       call set_predefined_scalar_array('alphas'//C_NULL_CHAR,
      *                                           1,sDim1,sVals1)
@@ -633,19 +636,19 @@ c     call set_predefined_scalar_array('oed_ovl'//C_NULL_CHAR, 2, sDim2, sVals)
      *                                            1,sDim1,sVals1)
 
       sDim1(1) = ntot_shells
-      write(6,*) ' IXALPHS ' 
+C      write(6,*) ' IXALPHS ' 
       do i = 1, sDim1(1)
          iVals1(i) = tixalpha(i)
-         write(6,*) i, tixalpha(i) 
+C         write(6,*) i, tixalpha(i) 
       enddo
       call set_predefined_integer_array('ixalphas'//C_NULL_CHAR,
      *                                  1,sDim1, iVals1)
 
       sDim1(1) = ntot_shells
-      write(6,*) ' IXCOEFFS ' 
+C      write(6,*) ' IXCOEFFS ' 
       do i = 1, sDim1(1)
          iVals1(i) = tixpcoeff(i)
-         write(6,*) i, iVals1(i) 
+C         write(6,*) i, iVals1(i) 
       enddo
       call set_predefined_integer_array('ixpcoeffs'//C_NULL_CHAR,1,
      *                                   sDim1, iVals1)
@@ -659,12 +662,12 @@ c Array containg atomic coordinates
          cVals(i,j) = acenter(j,i) 
       enddo 
       enddo 
-      write(6,*) ' COORDS:' 
-      do i = 1, sDim2(1) 
-      do j = 1, sDim2(2) 
-         write(6,*) '  ', i, j, cVals(i,j) 
-      enddo 
-      enddo 
+C      write(6,*) ' COORDS:' 
+C      do i = 1, sDim2(1) 
+C      do j = 1, sDim2(2) 
+C         write(6,*) '  ', i, j, cVals(i,j) 
+C      enddo 
+C      enddo 
       call set_predefined_scalar_array('coords'//C_NULL_CHAR,
      *                                                2,sDim2,cVals)
 
@@ -675,12 +678,12 @@ c Array containg atomic coordinates
          cVals(i,j) = tcoord(i,j) 
       enddo 
       enddo 
-      write(6,*) ' TCOORDS:' 
-      do i = 1, sDim2(1) 
-      do j = 1, sDim2(2) 
-         write(6,*) '  ', i, j, tcoord(i,j), cVals(i,j) 
-      enddo 
-      enddo 
+C      write(6,*) ' TCOORDS:' 
+C      do i = 1, sDim2(1) 
+C      do j = 1, sDim2(2) 
+C         write(6,*) '  ', i, j, tcoord(i,j), cVals(i,j) 
+C      enddo 
+C      enddo 
       call set_predefined_scalar_array('tcoords'//C_NULL_CHAR,
      *                                               2,sDim2,cVals)
 c Form the arrays ccbeg and ccend and indx_cc  
@@ -688,29 +691,29 @@ c Form the arrays ccbeg and ccend and indx_cc
       call setup_ccbeg(talpha, tixalpha, tpcoeff, tixpcoeff,
      *                       ncfps, npfps, nshells, ccbeg, ccend,
      *                       indx_cc, icc) 
-      write(6,*) ' CC_BEG '
+C      write(6,*) ' CC_BEG '
       sDim1(1) = icc  
 
       call set_constant('n_c_funcs'//C_NULL_CHAR,icc)
 
       do i = 1, sDim1(1)
          iVals1(i) = ccbeg(i)
-         write(6,*) i, iVals1(i) 
+C         write(6,*) i, iVals1(i) 
       enddo
       call set_predefined_integer_array('ccbeg'//C_NULL_CHAR,1,sDim1,
      *                                   iVals1)
-      write(6,*) ' CC_END '
+C      write(6,*) ' CC_END '
       do i = 1, sDim1(1)
          iVals1(i) = ccend(i)
-         write(6,*) i, iVals1(i) 
+C         write(6,*) i, iVals1(i) 
       enddo
       call set_predefined_integer_array('ccend'//C_NULL_CHAR,1,sDim1,
      *                                   iVals1)
-      write(6,*) ' INDX_CC '
+C      write(6,*) ' INDX_CC '
       sDim1(1) = nshells   
       do i = 1, sDim1(1)
          iVals1(i) = indx_cc(i)
-         write(6,*) i, iVals1(i) 
+C         write(6,*) i, iVals1(i) 
       enddo
       call set_predefined_integer_array('indx_cc'//C_NULL_CHAR,1,sDim1,
      *                                   iVals1)

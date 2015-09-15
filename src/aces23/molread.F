@@ -630,23 +630,23 @@ c     ixcoeff       array indicating the beginning index for each pcoeff/shell
          tixalpha(n) = ixalpha(n) 
          tixpcoeff(n) = ixpcoef(n) 
       enddo 
-      write(6,*) ' IXALPHAs ' 
-      do i = 1, ntot_shells   
-         write(6,*) '     ', i, tixalpha(i) 
-      enddo 
-      write(6,*) ' ALPHAs ' 
+C      write(6,*) ' IXALPHAs ' 
+C      do i = 1, ntot_shells   
+C         write(6,*) '     ', i, tixalpha(i) 
+C      enddo 
+C      write(6,*) ' ALPHAs ' 
       do i = 1, ntot_alpha 
          talpha(i) = alpha(i)
-         write(6,*) '     ', i, alpha(i) 
+C         write(6,*) '     ', i, alpha(i) 
       enddo 
-      write(6,*) ' PCoeffs ' 
+C      write(6,*) ' PCoeffs ' 
       do i = 1, ntot_pcoef  
          tpcoeff(i) = pcoeff(i) 
-         write(6,*) '     ', i, pcoeff(i) 
+C         write(6,*) '     ', i, pcoeff(i) 
       enddo 
       write(6,*) ' tCoords ' 
       do i = 1, 3 
-         write(6,*) '     ', i, (coord(i,n), n=1, ntot_shells) 
+C         write(6,*) '     ', i, (coord(i,n), n=1, ntot_shells) 
       do n = 1, ntot_shells 
          tcoord(i,n) = coord(i,n) 
       enddo 

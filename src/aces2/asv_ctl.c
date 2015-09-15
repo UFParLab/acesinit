@@ -141,7 +141,7 @@ const ASV_nl_t ASV_nl[] =
 {/*37*/  "IFLREC",	"FILE_REC#SIZ",	h_ICHAR_f_int,	-1,	"Words"},
 {/*38*/  "NON-HF",	"NONHF#",	h_ICHAR_handle,	0,	""},
 {/*39*/  "IORBTP",	"ORB#ITALS",	h_ICHAR_handle,	-1,	""},
-{/*40*/  "IRPPLS",	"SCF_EXPST#AR",	h_ICHAR_f_int,	8,	""},
+{/*40*/  "IRPPLS",	"SCF_EXPST#AR",	h_ICHAR_f_int,	2,	""},
 /*       *alias,	*oppar,		ichar,		ideflt,	*units */
 {/*41*/  "ILOCOC",	"LOCK_ORBO#CC",	h_ICHAR_handle,	0,	""},
 {/*42*/  "ISTRIP",	"FILE_STRI#PE",	h_ICHAR_f_int,	0,	""},

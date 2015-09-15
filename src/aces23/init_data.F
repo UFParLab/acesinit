@@ -539,7 +539,7 @@ c-------------------------------------------------------------------------
       write(6,*) ' NALPHA_VIRT =' , nalpha_virtual 
       write(6,*) ' NBETA_VIRT =' , nbeta_virtual 
       
-      if (.not. ignore_dropmo) then
+C      if (.not. ignore_dropmo) then
 
 C--------------------------------------------------------------------------
 c   Check if any MO's are to be dropped.
@@ -572,7 +572,7 @@ c-----------------------------------------------------------------------------
                modrop_b(i) = modrop_a(i)
             enddo
          endif
-      endif
+C      endif
 
       if ((ndropmo_a .gt. 0 .or. ndropmo_b .gt. 0) .and. 
      *    .not. ignore_dropmo) then 

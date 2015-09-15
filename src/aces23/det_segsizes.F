@@ -15,6 +15,7 @@ C  in the file COPYRIGHT.
 
       subroutine det_segsizes(auto_seg_switch, nproc)
       implicit none
+      include 'dropmo.h'
       integer auto_seg_switch, nproc
       integer oa_segsize, ob_segsize, va_segsize, vb_segsize
 
@@ -43,8 +44,8 @@ c   o count the number of AOs per shell
          end do
       end if
 
-      naocc = nalpha_occupied 
-      nbocc = nbeta_occupied 
+      naocc = nalpha_occupied - ndropmo_a
+      nbocc = nbeta_occupied - ndropmo_b
 
       auto_seg_switch = 2  
       if (auto_seg_switch .eq. 1) then
