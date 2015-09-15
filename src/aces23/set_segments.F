@@ -15,11 +15,32 @@ C  in the file COPYRIGHT.
       subroutine set_naocc_segs(nocc, nocc_orbitals, mx_occ_seg_size) 
       implicit none 
       include 'frag_def.h'
+      include 'dropmo.h'
       integer nocc, nocc_orbitals, mx_occ_seg_size
       integer i, j, start, nsegs    
       integer n_frag, occ_frag(maxfrag), nocc_frag(maxfrag)
 
+      logical isdropmo
+      integer mx_drop_seg_size
+      integer dls
+      integer ndrop
+
 c As a test just set occ fragmants 
+
+      isdropmo=.false.
+      ndrop = 0
+      if (ndropmo_a .gt. 0) then
+          isdropmo=.true.
+          nocc_orbitals = nocc_orbitals - ndropmo_a
+
+	  ndrop = ndropmo_a
+
+	  call find_drop_seg(ndropmo_a,mx_drop_seg_size)
+
+          write(6,*) 'jnb dropcore'
+          write(6,*) 'ndropmo_a', ndropmo_a
+	  write(6,*) 'jnb drop seg size', mx_drop_seg_size
+      endif
 
       n_frag = nfrags 
       if (nfrags .eq. 1) occ_frag(1) = nocc_orbitals 
@@ -40,34 +61,67 @@ c Determine the effective mx_occ_seg_size
 100   continue 
       nocc = 0 
       do i = 1, n_frag 
-         if (mx_occ_seg_size .ge. occ_frag(i)) then 
-            nocc         = nocc + 1 
-            nocc_frag(i) = 1 
-            bocc_frag(i,nocc_frag(i)) = 1 
-            eocc_frag(i,nocc_frag(i)) = bocc_frag(i,nocc_frag(i)) 
-     *                                + occ_frag(i) - 1  
-         else  
-            nocc_frag(i) = occ_frag(i)/mx_occ_seg_size 
-            if (nocc_frag(i)*mx_occ_seg_size .lt. occ_frag(i)) 
+C         if (mx_occ_seg_size .ge. occ_frag(i)) then 
+C
+C            if(isdropmo) then
+C            nocc         = nocc + 1 
+C            nocc_frag(i) = 1 
+C            bocc_frag(i,nocc_frag(i)) = 1 
+C            eocc_frag(i,nocc_frag(i)) = bocc_frag(i,nocc_frag(i)) 
+C     *                                + occ_frag(i) - 1  
+C            endif
+C            nocc         = nocc + 1 
+C            nocc_frag(i) = 1 
+C            bocc_frag(i,nocc_frag(i)) = 1 
+C            eocc_frag(i,nocc_frag(i)) = bocc_frag(i,nocc_frag(i)) 
+C     *                                + occ_frag(i) - 1  
+C         else  
+
+	    dls = 1
+
+            if(isdropmo) then
+            nocc_frag(i) = ndrop/mx_drop_seg_size 
+            if (nocc_frag(i)*mx_drop_seg_size .lt. ndrop) 
      *          nocc_frag(i) = nocc_frag(i) + 1 
-            nocc = nocc + nocc_frag(i) 
 
             do j = 1, nocc_frag(i) 
                if (j .eq. 1) then 
                   bocc_frag(i,j) = 1 
-                  eocc_frag(i,j) = bocc_frag(i,j) + mx_occ_seg_size - 1  
+                 eocc_frag(i,j) = bocc_frag(i,j) + mx_drop_seg_size - 1  
                endif 
 
                if (j .gt. 1) then 
+                  bocc_frag(i,j) = eocc_frag(i,j-1) + 1 
+                 eocc_frag(i,j) = bocc_frag(i,j) + mx_drop_seg_size - 1  
+               endif 
+            enddo 
+            if (eocc_frag(i,nocc_frag(i)) .gt. ndrop)
+     *         eocc_frag(i,nocc_frag(i)) = ndrop
+            dls = nocc_frag(i) + 1
+            nocc = nocc + nocc_frag(i)  - 1
+            endif
+CCCC
+            nocc_frag(i) = occ_frag(i)/mx_occ_seg_size + dls - 1
+            if (nocc_frag(i)*mx_occ_seg_size .lt. occ_frag(i)) 
+     *          nocc_frag(i) = nocc_frag(i) + 1 
+            nocc = nocc + nocc_frag(i) - 1
+
+            do j = dls, nocc_frag(i) 
+               if (j .eq. dls) then 
+                  bocc_frag(i,j) = ndrop + 1
+                  eocc_frag(i,j) = bocc_frag(i,j) + mx_occ_seg_size - 1  
+               endif 
+
+               if (j .gt. dls) then 
                   bocc_frag(i,j) = eocc_frag(i,j-1) + 1 
                   eocc_frag(i,j) = bocc_frag(i,j) + mx_occ_seg_size - 1  
                endif 
             enddo 
 
-            if (eocc_frag(i,nocc_frag(i)) .gt. occ_frag(i)) 
+            if (eocc_frag(i,nocc_frag(i)) .gt. occ_frag(i)+ndrop) 
      *         eocc_frag(i,nocc_frag(i)) = occ_frag(i) 
 
-         endif 
+C         endif 
 
       enddo 
 c     if (nocc .gt. nsegs) then 
@@ -88,7 +142,11 @@ c     endif
          start = start + (eaocc_frag(i,nocc_frag(i)) -
      *                    baocc_frag(i,1) + 1)   
       enddo 
-
+      baocc_drop = dls
+C reset occupied orbital count
+      if(isdropmo) then
+          nocc_orbitals = nocc_orbitals + ndropmo_a
+      endif
 
       end
 
@@ -177,11 +235,32 @@ c     endif
       subroutine set_nbocc_segs(nocc, nocc_orbitals, mx_occ_seg_size) 
       implicit none 
       include 'frag_def.h'
+      include 'dropmo.h'
       integer nocc, nocc_orbitals, mx_occ_seg_size
       integer i, j, start, nsegs    
-      integer n_frag, occ_frag(maxfrag), nocc_frag(maxfrag) 
+      integer n_frag, occ_frag(maxfrag), nocc_frag(maxfrag)
+
+      logical isdropmo
+      integer mx_drop_seg_size
+      integer dls
+      integer ndrop
 
 c As a test just set occ fragmants 
+
+      isdropmo=.false.
+      ndrop = 0
+      if (ndropmo_b .gt. 0) then
+          isdropmo=.true.
+          nocc_orbitals = nocc_orbitals - ndropmo_b
+
+	  ndrop = ndropmo_b
+
+	  call find_drop_seg(ndropmo_b,mx_drop_seg_size)
+
+          write(6,*) 'jnb dropcore'
+          write(6,*) 'ndropmo_b', ndropmo_b
+	  write(6,*) 'jnb drop seg size', mx_drop_seg_size
+      endif
 
       n_frag = nfrags 
       if (nfrags .eq. 1) occ_frag(1) = nocc_orbitals 
@@ -191,6 +270,8 @@ c As a test just set occ fragmants
          enddo 
       endif 
 
+c Determine the effective mx_occ_seg_size 
+
       nsegs = nocc_orbitals/mx_occ_seg_size 
       write(6,*) ' VFL nsegs - ', nsegs, mx_occ_seg_size 
       if (nsegs*mx_occ_seg_size .ne. nocc_orbitals) nsegs = nsegs + 1 
@@ -198,37 +279,61 @@ c As a test just set occ fragmants
       write(6,*) ' VFL nsegs - ', nsegs, mx_occ_seg_size 
 
 100   continue 
-
       nocc = 0 
       do i = 1, n_frag 
-         if (mx_occ_seg_size .ge. occ_frag(i)) then 
-            nocc         = nocc + 1 
-            nocc_frag(i) = 1 
-            bocc_frag(i,nocc_frag(i)) = 1 
-            eocc_frag(i,nocc_frag(i)) = bocc_frag(i,nocc_frag(i)) 
-     *                                + occ_frag(i) - 1  
-         else  
-            nocc_frag(i) = occ_frag(i)/mx_occ_seg_size 
-            if (nocc_frag(i)*mx_occ_seg_size .lt. occ_frag(i)) 
+C         if (mx_occ_seg_size .ge. occ_frag(i)) then 
+C            nocc         = nocc + 1 
+C            nocc_frag(i) = 1 
+C            bocc_frag(i,nocc_frag(i)) = 1 
+C            eocc_frag(i,nocc_frag(i)) = bocc_frag(i,nocc_frag(i)) 
+C     *                                + occ_frag(i) - 1  
+C         else  
+
+	    dls = 1
+
+            if(isdropmo) then
+            nocc_frag(i) = ndrop/mx_drop_seg_size 
+            if (nocc_frag(i)*mx_drop_seg_size .lt. ndrop) 
      *          nocc_frag(i) = nocc_frag(i) + 1 
-            nocc = nocc + nocc_frag(i) 
 
             do j = 1, nocc_frag(i) 
                if (j .eq. 1) then 
                   bocc_frag(i,j) = 1 
-                  eocc_frag(i,j) = bocc_frag(i,j) + mx_occ_seg_size - 1  
+                 eocc_frag(i,j) = bocc_frag(i,j) + mx_drop_seg_size - 1  
                endif 
 
                if (j .gt. 1) then 
+                  bocc_frag(i,j) = eocc_frag(i,j-1) + 1 
+                 eocc_frag(i,j) = bocc_frag(i,j) + mx_drop_seg_size - 1  
+               endif 
+            enddo 
+            if (eocc_frag(i,nocc_frag(i)) .gt. ndrop)
+     *         eocc_frag(i,nocc_frag(i)) = ndrop
+            dls = nocc_frag(i) + 1
+            nocc = nocc + nocc_frag(i) - 1
+            endif
+CCCC
+            nocc_frag(i) = occ_frag(i)/mx_occ_seg_size + dls - 1
+            if (nocc_frag(i)*mx_occ_seg_size .lt. occ_frag(i)) 
+     *          nocc_frag(i) = nocc_frag(i) + 1 
+            nocc = nocc + nocc_frag(i) - 1
+
+            do j = dls, nocc_frag(i) 
+               if (j .eq. dls) then 
+                  bocc_frag(i,j) = ndrop + 1
+                  eocc_frag(i,j) = bocc_frag(i,j) + mx_occ_seg_size - 1  
+               endif 
+
+               if (j .gt. dls) then 
                   bocc_frag(i,j) = eocc_frag(i,j-1) + 1 
                   eocc_frag(i,j) = bocc_frag(i,j) + mx_occ_seg_size - 1  
                endif 
             enddo 
 
-            if (eocc_frag(i,nocc_frag(i)) .gt. occ_frag(i)) 
+            if (eocc_frag(i,nocc_frag(i)) .gt. occ_frag(i)+ndrop) 
      *         eocc_frag(i,nocc_frag(i)) = occ_frag(i) 
 
-         endif 
+C         endif 
 
       enddo 
 c     if (nocc .gt. nsegs) then 
@@ -236,7 +341,7 @@ c        mx_occ_seg_size = mx_occ_seg_size + 1
 c        go to 100 
 c     endif 
 
-      write(6,*) ' NbOCC = ', nocc 
+      write(6,*) ' NaOCC = ', nocc 
       start = 0 
       do i = 1, n_frag 
          n_bocc(i) = nocc_frag(i) 
@@ -249,6 +354,11 @@ c     endif
          start = start + (ebocc_frag(i,nocc_frag(i)) -
      *                    bbocc_frag(i,1) + 1)   
       enddo 
+      bbocc_drop = dls
+C reset occupied orbital count
+      if(isdropmo) then
+          nocc_orbitals = nocc_orbitals + ndropmo_a
+      endif
 
       end
 

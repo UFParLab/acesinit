@@ -1,6 +1,7 @@
       common/dropmo/modrop_a, modrop_b, ndropmo_a, ndropmo_b,
      *              moamap, mobmap, enalpha_virtual, enbeta_virtual,
-     *              enalpha_occupied, enbeta_occupied
+     *              enalpha_occupied, enbeta_occupied,
+     *              baocc_drop, bbocc_drop
 
       integer max_basis
       parameter (max_basis = 10000)
@@ -11,3 +12,4 @@
       integer ndropmo_a, ndropmo_b
       integer enalpha_virtual, enbeta_virtual
       integer enalpha_occupied, enbeta_occupied
+      integer baocc_drop, bbocc_drop

@@ -294,8 +294,8 @@ C
           CALL IGETREC(-1, 'JOBARC','REDNCORD', 1, TOTREDNCO)
           NXM6 = TOTREDNCO
       ENDIF
-           Write(6,*) "The Cartesian coords1:"
-           Write(6, "(3F10.5)") (Q(I), I=1, NX)
+C           Write(6,*) "The Cartesian coords1:"
+C           Write(6, "(3F10.5)") (Q(I), I=1, NX)
 C
 C The following applies for the user defined internal optimizations.
 C Somewhat overaloaded because PS1EXIST control numerical finite
@@ -440,8 +440,8 @@ C
 C
 C Gets information from OPTARC file for subsequent steps (after
 C the first call)
-           Write(6,*) "The Cartesian coords2:"
-           Write(6, "(3F10.5)") (Q(I), I=1, NX)
+C           Write(6,*) "The Cartesian coords2:"
+C           Write(6, "(3F10.5)") (Q(I), I=1, NX)
 C
       IF (iarch .EQ.1) Then
 C
@@ -508,8 +508,8 @@ C
 #ifdef _DEBUG_LVL0
             Print*, "Before the call to GMETRY, XYZIN", XYZIN
 #endif
-           Write(6,*) "The Cartesian coords3:"
-           Write(6, "(3F10.5)") (Q(I), I=1, NX)
+C           Write(6,*) "The Cartesian coords3:"
+C           Write(6, "(3F10.5)") (Q(I), I=1, NX)
 C 
         IF (.NOT. XYZIN) CALL GMETRY()
         IF (XYZIN .AND. Iflags(h_IFLAGS_vib) .GT. 1 .AND.
@@ -537,8 +537,8 @@ CJDW 4/1/97. Write COMPSYOP with maximum possible length at beginning
 C of finite difference calculation.
 C Also COMPPERM, COMPCLSS. When SYMMETRY=NONE, these two records
 C are initialized in symmetry.F.
-           Write(6,*) "The Cartesian coords4:"
-           Write(6, "(3F10.5)") (Q(I), I=1, NX)
+C           Write(6,*) "The Cartesian coords4:"
+C           Write(6, "(3F10.5)") (Q(I), I=1, NX)
 C
         IF(.NOT.PS1EXIST)THEN
          If (iFlags(h_IFLAGS_sym).GT.0) THEN
@@ -576,9 +576,9 @@ c SB : The if(.not.PS1EXIST) block used to be inside the if(natoms.gt.1)
 c block.  I moved it outside so that the call to geomout is made
 c even in the case of an atom.
 C
-          do i = 1, 3*natoms 
-             write(6,*) ' VFL in geopt', i, q(i) 
-          enddo 
+C          do i = 1, 3*natoms 
+C             write(6,*) ' VFL in geopt', i, q(i) 
+C          enddo 
         If (NAtoms .gt. 1) THEN
 C
 C Call the Z-matrix analyzer - requires A matrix from BUILDB.
@@ -646,9 +646,9 @@ CADY 5/06/04. Allow for GAMESS (currently must make MOL file).
      &                        .or. IntTyp .eq. 4) then
 
 c         Call MkVMOL (q, PGrp, NAtoms, NUnique, ZSym, IAtNum,
-          do i = 1, 3*Natoms 
-             write(6,*) ' C IN VMOL :', i, q(i) 
-          enddo  
+C          do i = 1, 3*Natoms 
+C             write(6,*) ' C IN VMOL :', i, q(i) 
+C          enddo  
           Call MkVMOL (q, PGrp, NAtoms, NUnique, ZSym, IAtNum,
      &         GenBy, Z(N11), IStat, BasNam)
            if (iflags(h_IFLAGS_guess).eq.2) then
