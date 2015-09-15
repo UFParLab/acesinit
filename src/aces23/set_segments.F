@@ -104,7 +104,7 @@ CCCC
             nocc_frag(i) = occ_frag(i)/mx_occ_seg_size + dls - 1
             if (nocc_frag(i)*mx_occ_seg_size .lt. occ_frag(i)) 
      *          nocc_frag(i) = nocc_frag(i) + 1 
-            nocc = nocc + nocc_frag(i) - 1
+            nocc = nocc + nocc_frag(i)
 
             do j = dls, nocc_frag(i) 
                if (j .eq. dls) then 
@@ -316,7 +316,7 @@ CCCC
             nocc_frag(i) = occ_frag(i)/mx_occ_seg_size + dls - 1
             if (nocc_frag(i)*mx_occ_seg_size .lt. occ_frag(i)) 
      *          nocc_frag(i) = nocc_frag(i) + 1 
-            nocc = nocc + nocc_frag(i) - 1
+            nocc = nocc + nocc_frag(i) 
 
             do j = dls, nocc_frag(i) 
                if (j .eq. dls) then 
@@ -417,7 +417,8 @@ c Determine the effective mx_occ_seg_size
             enddo 
 
             if (evirt_frag(i,nvirt_frag(i)) .gt. virt_frag(i)) 
-     *         evirt_frag(i,nvirt_frag(i)) = virt_frag(i) !+nocc_orbitals 
+     *         evirt_frag(i,nvirt_frag(i)) = virt_frag(i) !nocc_orbitals 
+
          endif 
 
       enddo 
@@ -426,7 +427,8 @@ c        mx_virt_seg_size = mx_virt_seg_size + 1
 c        go to 100 
 c     endif 
 
-      write(6,*) ' NbVIRT = ', nvirt 
+
+      write(6,*) ' NaVIRT = ', nvirt, n_frag, virt_frag(1)  
       start = nocc_orbitals 
       do i = 1, n_frag 
          n_bvirt(i) = nvirt_frag(i) 
