@@ -94,45 +94,43 @@ c---------------------------------------------------------------------------
 
 C--------------------------------------------------------------------------
 c   If this is an ECP calculation then we must modify NPROTON to obtain
-c   correct number of occupied orbitals. Why is this not done earlier??   
-C--------------------------------------------------------------------------
+c   correct number of occupied orbitals. There is no need to have this
+C   call to SET_ECP_CHARGES here. It is done in mkvmol.F and the ECP 
+C   corrected atom charges are availble in JOBARC. 
+C-------------------------------------------------------------------------
 
       ECP = iflags(71) 
+C 
       IF (ECP .EQ. 1) THEN 
          NallPROTON = NPROTON 
 
-         CALL SET_ECP_CHARGES(MAX_CENTERS,NATOMS,ICRCOR) 
+CSSS         CALL SET_ECP_CHARGES(MAX_CENTERS,NATOMS,ICRCOR) 
+
          CALL IGETREC(20,'JOBARC','ATOMCHRG',NATOMS,ICRCOR)
-c 
-c        do i = 1, natoms 
-c           write(6,*) 'ATOMCHRG  ', i, icrcor(i) 
-c        enddo 
 
-c        natoms = 2
-c        write(6,*) ' Natoms = ', natoms 
-
+C#ifdef _DEBUU_LVL0 
+        Write(6,*)
+        do i = 1, natoms 
+           write(6,"(a,I4)") 'ATOMCHRG with ECP : =',icrcor(i) 
+        enddo 
+C#endif 
          nproton = 0 
          do i = 1, natoms 
-#ifdef _DEBUG_LVL0
-            write(6,*) '  ', i, icrcor(i) 
-#endif
             nproton = nproton + icrcor(i) 
          enddo 
-
-c        icrcor(1) = 7 
-c        icrcor(2) = 7 
 
          do i = 1, natoms 
             charge(i) = icrcor(i) 
          enddo 
 
-c        nproton = 14 
-
          noff = NallPROTON - NPROTON 
-#ifdef _DEBUG_LVL0
-         write(6,*) ' Nproton = ', nallproton, nproton, noff  
-#endif 
-      ELSE 
+
+C#ifdef _DEBUG_LVL0
+C Here noff is the number of protons accounted by ECPs.
+      write(6,*)
+      write(6,"(a,3i4)")'Total, actual, replaced number of protons  = ' 
+     *                   ,nallproton, nproton, noff  
+C#endif 
       ENDIF 
 
       ICHARG=IFLAGS(28)

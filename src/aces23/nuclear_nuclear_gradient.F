@@ -12,7 +12,7 @@ C  GNU General Public License for more details.
 
 C  The GNU General Public License is included in this distribution
 C  in the file COPYRIGHT.
-      subroutine nuclear_nuclear_gradient(hess, nnhess, iatoms)
+      subroutine nuclear_nuclear_gradient(hess, nnhess, natoms_l)
 c--------------------------------------------------------------------------
 c   Calculates the nuclear-nuclear contribution to the gradient.
 c--------------------------------------------------------------------------
@@ -21,22 +21,22 @@ c--------------------------------------------------------------------------
       include 'hess.h'
       include 'dbugcom.h'
 
-      integer i, j, k, iatoms
+      integer i, j, k, natoms_l
       integer ihess, jhess, khess, iatom, jatom
       double precision x, y, z, r, r3, r5, pkl
-      double precision hess(3*iatoms,3*iatoms)
-      double precision NNhess(3*iatoms,3*iatoms)
-      double precision d(iatoms,iatoms)
+      double precision hess(3*natoms_l,3*natoms_l)
+      double precision NNhess(3*natoms_l,3*natoms_l)
+      double precision d(natoms_l,natoms_l)
 
-      if (iatoms .gt. max_centers) then
-         print *,'Error: iatoms = ',iatoms,' is larger than ',
+      if (natoms_l .gt. max_centers) then
+         print *,'Error: natoms = ',natoms,' is larger than ',
      *      'max_centers ',max_centers
          call abort_job()
       endif
   
-      DO I = 1, NATOMS  
+      DO I = 1, NATOMS_L
 C
-         DO J = 1, NATOMS  
+         DO J = 1, NATOMS_L
 
             if (i .ne. j) then 
 C
@@ -68,7 +68,7 @@ C
       ENDDO 
 
       if (dbg) then
-         do j = 1, iatoms
+         do j = 1, natoms
             print *,'NNgrad for atom ',j,' : ',(nngrad(i,j),i=1,3)
          enddo
       endif

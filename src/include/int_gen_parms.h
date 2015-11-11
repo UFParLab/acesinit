@@ -118,16 +118,17 @@ c nContAOs : total number of contracted functions
 
       integer*8 memptr, i0wrk, ithread
       integer*8 ipkgscr, dpkgscr, icoord, master_icoord, ialpha, ipcoeff
+      integer*8 ialpha_norm
       integer*8 ierdind, icc_beg, icc_end, iscale_fac
       integer*8 iscfa, iscfb, ifocka, ifockb, ifockrohfa, ifockrohfb
-      integer*8 iepsa, iepsb
+      integer*8 iepsa, iepsb, icord
       integer*8 iccbeg, iccend
       integer*8 i1e_sint, i1e_hint
       double precision scf_energy, totenerg
       double precision damp_init, cc_conv, scf_conv, bcc_conv
       integer guess, lshft_a1, lshft_b1, damp_type, damp_tol
       integer lindep_tol, lock_orbitals, intgrl_tol, damp_end
-      integer lock_orbocc, diis_start, diis_order, natoms 
+      integer lock_orbocc, diis_start, diis_order, natoms, iecp_on
 
       double precision excite, eom_tol, eom_roots ! Watson Added
       integer polarizability, a_tensor, g_tensor, d_tensor
@@ -196,7 +197,7 @@ c nContAOs : total number of contracted functions
      &                     lshft_b1, damp_type, damp_tol, lindep_tol,
      &                     lock_orbitals, lock_orbocc, intgrl_tol, 
      &                     damp_end, diis_start, diis_order,
-     &                     natoms, 
+     &                     natoms, iecp_on, ialpha_norm,
      &                     last 
 
 
