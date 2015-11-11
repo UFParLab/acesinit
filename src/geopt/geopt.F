@@ -645,10 +645,6 @@ CADY 5/06/04. Allow for GAMESS (currently must make MOL file).
      &                        .or. IntTyp .eq. 5
      &                        .or. IntTyp .eq. 4) then
 
-c         Call MkVMOL (q, PGrp, NAtoms, NUnique, ZSym, IAtNum,
-C          do i = 1, 3*Natoms 
-C             write(6,*) ' C IN VMOL :', i, q(i) 
-C          enddo  
           Call MkVMOL (q, PGrp, NAtoms, NUnique, ZSym, IAtNum,
      &         GenBy, Z(N11), IStat, BasNam)
            if (iflags(h_IFLAGS_guess).eq.2) then

@@ -32,10 +32,11 @@ c---------------------------------------------------------------------------
 
       integer i, ishell, nsh, sum 
 
-      write(6,*) ' NSHELLS = ', nshells 
-      do i = 1, nshells 
-      write(6,*) end_nfps(i)  
-      enddo 
+#ifdef _DEBUG_LVL0
+      write(6,"(a,I4)") ' NSHELLS and end_nfps = ', nshells 
+      write(6,"(6(1x,I4))") (end_nfps(i), i=1, Nshells)
+#endif 
+
       ishell = 1
       nsegs  = 0
       nsh    = end_nfps(1)
@@ -92,9 +93,10 @@ c-----------------------------------------------------------------------------
 
   200 continue
 
-      write(6,*) ' NAO segs =', nsegs 
-      do i = 1, nsegs 
-         write(6,*) segs(i) 
-      enddo 
+#ifdef _DEBUG_LVL0
+      write(6,"(a,I4)") ' Nao segs = ', nsegs 
+      write(6,"(6(1x,I4))") (segs(i), i=1, Nsegs)
+#endif 
+
       return
       end

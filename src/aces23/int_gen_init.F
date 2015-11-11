@@ -86,7 +86,7 @@ c---------------------------------------------------------------------------
 c   No sorting of shells.  Shells are processed in their original order.
 c---------------------------------------------------------------------------
 
-         write(6,*) ' Skipping BINPACK ' 
+         Write(*,*)
          do i = 1, nshells
             ixshells(i) = i
          enddo
@@ -96,7 +96,6 @@ c---------------------------------------------------------------------------
          if ((ECP .eq. 0) .and. (.NOT. frag_calc)) then  
 c        if ((aat_database(1:1) .eq. ' ') .and. (ECP .eq. 0)) then  
 c    *       .and. (.not. frag_calc)) then
-            write(6,*) ' Calling BINPACK ' 
             call binpack(nshells, nfps, sip_mx_ao_segsize, ixshells)
          else
 
@@ -104,7 +103,7 @@ c---------------------------------------------------------------------------
 c   No sorting of shells.  Shells are processed in their original order.
 c---------------------------------------------------------------------------
 
-            write(6,*) ' Skipping BINPACK ' 
+            write(6,"(a)") " Warning: BINPACK is not used"
             do i = 1, nshells
                ixshells(i) = i
             enddo

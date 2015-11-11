@@ -57,7 +57,6 @@ src/aces2/iszeq.F\
 src/aces2/rdcchr.F\
 src/aces2/cdiv.F\
 src/aces2/dist.F\
-src/aces2/atomnumb.F\
 src/aces2/aces_exit.F\
 src/aces2/sqush.F\
 src/aces2/vec.F\
@@ -144,6 +143,15 @@ src/aces23/dlarfb.F\
 src/aces23/xdswap.F\
 src/aces23/reset_internal_system_data.F\
 src/aces23/reorder_coefficients.F\
+src/aces23/atgrep.F\
+src/aces23/charges.F\
+src/aces23/ecpdef.F\
+src/aces23/ecppar.F\
+src/aces23/ecpget.F\
+src/aces23/wrecp.F\
+src/aces23/lstr.F\
+src/aces23/iattop.F\
+src/aces23/rdecp.F\
 src/symcor/ener2fcm.F\
 src/symcor/s_rotm.F\
 src/symcor/trnfcm.F\
@@ -277,6 +285,7 @@ src/aces2/aces3_gtflgs.F\
 src/aces2/getrec.F\
 src/aces2/parse_int.F\
 src/aces2/mkvmol.F\
+src/aces2/atomnumb.F\
 src/aces2/aces_ja_init.F\
 src/aces2/putcrec.F\
 src/aces23/joda_exit.F\
@@ -494,6 +503,7 @@ src/include/icore.com\
 src/include/istart.com\
 src/include/ric_heap.com\
 src/include/basis_info.h\
+src/include/ecp_info.h\
 src/aces_setup/setup_main.F
 
 

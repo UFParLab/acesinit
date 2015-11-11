@@ -15,7 +15,11 @@ C  in the file COPYRIGHT.
       SUBROUTINE simple_INSPECT_MOL(fname, MAX_ATOMS, max_shells,
      &                natoms, nshells, nspc, cartesian, ITFCT, LNP1,
      &                lnpo, nfct, nufct, nbasis, NAOBASIS, nCFpS, 
-     &                nPFpS, NAOATM, angmom, atomic_label)
+     &                nPFpS, NAOATM, angmom, atomic_label,
+     & 
+     &                Iecp,Maxang_L,Maxjco_L,Nucstr_tmp,Nrcstr_tmp,
+     &                Iqmstr_tmp,Jcostr_tmp,Jstrt_tmp,Jrs_tmp,
+     &                Namat,Charge) 
 C
 C   Simple version of Ajith Perera's INSPECT_MOL routine.  This version 
 C   scans the MOL file to determine the number of atoms.  It also assumes
@@ -54,15 +58,24 @@ c vnn     = Nuclear-nuclear repulsion energy.
 
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
       include 'dbugcom.h'
+      include 'basis_info.h'
+      include 'ecp_info.h'
 C     
       CHARACTER*(*) FNAME
       CHARACTER*4 ATMNAM
+      CHARACTER*4 NAMAT(MAX_ATOMS)
       CHARACTER*80 XLINE
-      LOGICAL CARTESIAN
+      LOGICAL CARTESIAN, ECP
 C     
       DIMENSION NFCT(MAX_ATOMS), NAOATM(MAX_ATOMS),
      &          NUFCT(MAX_ATOMS), NAOUATM(MAX_ATOMS),
      &          COORD(3)
+
+      DIMENSION jcostr_tmp(MAX_ATOMS,Maxjco_L),
+     &          nucstr_tmp(MAX_ATOMS,Maxang_L,Maxjco_L),
+     &          nrcstr_tmp(MAX_ATOMS,Maxang_L,Maxjco_L),
+     &          Jstrt_tmp(max_shells),Jrs_tmp(max_shells),
+     &          iqmstr_tmp(MAX_ATOMS),Charge(Max_atoms)
 
       INTEGER NAOUATM2(MAX_ATOMS)
       INTEGER NAOBASIS, NAOTMP2, NP22
@@ -82,6 +95,11 @@ C joda by processing user input file and basis set library.
 C
       OPEN(UNIT=10, FILE=FNAME, FORM='FORMATTED', STATUS='OLD')
       REWIND(10)
+
+      Ecp = .False.
+      If (Iecp .GE. 1)  ECP = .TRUE.
+C
+C R
 C     
 C Read the first five lines. Information on those five lines 
 C are not relevent in the presnt context. 
@@ -107,9 +125,10 @@ C
       LTNP1  = 0
       LTNPO  = 0
 C
-      natoms = 0
-      nshells = 0
+      natoms     = 0
+      nshells    = 0
       indx_shell = 0
+
       DO 10 IATM = 1, MAX_ATOMS
          READ (10, '(A80)') XLINE
          if (xline(1:6) .eq. 'FINISH') go to 2000
@@ -123,6 +142,10 @@ C
          READ(10,1115) ATMNAM,(COORD(I),I=1,3)
  1115    FORMAT(A4,3F20.12)
 
+C ECP needs the charges as double precison.
+
+         CHARGE(IATM) = ZNUC
+C
 c----------------------------------------------------------------------------
 c   Save the geometry data 
 c----------------------------------------------------------------------------
@@ -132,7 +155,20 @@ C
          NUFCT(IATM) = 0
          NAOTMP      = 0
          NAOTMP2     = 0
-C
+         shell       = 0
+         sub_shell   = 0
+
+C The ECP arrays added, Ajith Perera, 04/2012----
+
+         IF (ECP) THEN
+            IQMSTR_TMP(IATM) = NSHL
+            NAMAT(IATM) = ATMNAM(1:2)
+            DO IMOM = 1, NSHL
+               JCOSTR_TMP(IATM, IMOM) = ISHL(IMOM)
+            ENDDO
+         ENDIF
+C----
+
          DO 20 I = 1, NSHL
             NPT  = 0
             NAOT = 0
@@ -150,6 +186,13 @@ C
                NPT  = NPT  + NP1
                NAOT = NAOT + NAO
 C
+C The ECP arrays added, Ajith Perera, 04/2012----
+C
+               IF (ECP) THEN
+                  NUCSTR_TMP(IATM,I,I1) = NP1
+                  NRCSTR_TMP(IATM,I,I1) = NAO
+               ENDIF
+C-------
                IF (CARTESIAN) THEN 
                   NP2 = I*(I + 1)/2 
                   NP22 = NP2
@@ -215,177 +258,79 @@ C
 C
  1011 CONTINUE
 C
+C The ECP arrays added, Ajith Perera, 04/2012----
+
+      JSTRT_TMP(1) = 0
+      JRS_TMP(1)   = 0
+
+      IF (ECP) THEN
+         DO ISHELL = 1, NSHELLS
+            JSTRT_TMP(ISHELL+1) = JSTRT_TMP(ISHELL) + NPFPS(ISHELL)
+            JRS_TMP(ISHELL+1)   = JRS_TMP(ISHELL) +   NPFPS(ISHELL)*
+     &                            NCFPS(ISHELL)
+         ENDDO
+      ENDIF
+C-------
 C Compute the Nuclear-Nuclear repulsion energy
 C --------------------------------------------
 C
 c     vnn = nuclear_nuclear_repulsion_energy(natoms)
 
+C Write the arrays used in ECP integrals to the ecp_info.h to
+C retrive them in aces_setup.F to write back to the .dat file.
+
+      Do Ishell = 1, Nshells
+         Jstrt(Ishell) = Jstrt_tmp(Ishell)
+         Jrs(Ishell)   = Jrs_tmp(Ishell)
+      Enddo
+
+      Max_sub_shells = 0
+
+      Do Iatm = 1, Natoms 
+
+         Iqmstr(iatm) =  Iqmstr_tmp(iatm)
+          
+         Do I = 1, Iqmstr_tmp(iatm)
+            Jcostr(iatm, i) = Jcostr_tmp(iatm,i)
+            Max_sub_shells = Max(Max_sub_shells, Jcostr_tmp(iatm,i))
+            Do i1 = 1,  Jcostr_tmp(iatm, i)
+               Nucstr(iatm,i,i1) = Nucstr_tmp(iatm,i,i1)
+               Nrcstr(iatm,i,i1) = Nrcstr_tmp(iatm,i,i1)
+            Enddo
+         Enddo
+      Enddo
+
+C#ifdef _DEBUG_LVL0
+      Write(6,"(a)") "The Iqmstr"
+      Write(6,"(10(1x,I4))") (Iqmstr(i), i=1, natoms)
+      Write(6,"(a)") "The jcostr"
+      Do i=1, Natoms 
+        Write(6,"(10(1x,I4))") (jcostr(i,j),j=1,Maxjco)
+      Enddo
+      Write(6,"(a)") "The Nucstr"
+      Do i=1, natoms 
+        Write(6,"(10(1x,I4))") ((Nucstr(i,j,k),j=1,4),k=1,Maxjco)
+      Enddo
+      Write(6,"(a)") "The Nrcstr"
+      Do i=1, Natoms 
+        Write(6,"(10(1x,I4))") ((Nrcstr(i,j,k),j=1,4),k=1,Maxjco)
+      Enddo
+      Write(6,"(a)") "The jstrt"
+      Write(6,"(10(1x,I4))") (Jstrt(i), i=1, Nshells)
+      Write(6,"(a)") "The jrs"
+      Write(6,"(10(1x,I4))") (Jrs(i), i=1, Nshells)
+      Write(6,*)
+C#endif
       close(10)
       RETURN
       END
 
-
-      SUBROUTINE INSPECT_MOL(IUATMS, NATOMS, NPOP, IREORDER, CARTESIAN,
-     &                       ITFCT, LNP1, LNPO, NFCT, NUFCT, NBASIS, 
-     &                       ATMNAM, COORD)
-C
-C Read the MOL file and assign the number of primitive functions on each 
-C atom, NFCT(IATM), the largest number of contracted functions in a single
-C shell, LNP1, the largest number of primitive orbitals,
-C (number of primitive functions times the number of atomic orbitals),
-C in a single shell, LNPO, and the total number of primitive functions,
-C ITFCT, for the  molecule. The number of AOs for each atom NAOATM. 
-C Ajith Perera, 09, 2003.
-C
-C     ----INPUT ARGUMENTS----
-C
-C IUATMS    = The number of symmetry unique atoms. 
-C NATOMS    = The total number of atoms. 
-C IREORDER  = If there is any reordering of centers, this should
-C             give the corrspondence. Most often this is a unit vector.
-C CARTESIAN = True for Cartesian basis choice 
-C NPOP      = number of symmetry equivalent atom for given 
-C             symmetry unique center
-C 
-C    ----OUTPUT ARGUMENTS----- 
-C
-C ITFCT   = Total number of primitive functions.
-C LNP1    = Largest possible value for number of contracted functions for
-C           all shells.
-C LNPO    = Largest possible value for the product of number of primitives
-C           of contracted functions for all shells.
-C NFCT    = The total number of  primitive functions on each atom.
-C NAOATM  = The total number of contracted functions on each atom.
-C NUFCT   = The total number of primitives on each sym. unique atom
-C NAOUATM = The total number of contracted functions on each sym. 
-C           unique atom.
-C COORD   = Cartesian Coordiantes of symm. unique atoms.
-C ATMNAM  = Atomic Symbols
-C NBASIS  = Total number of basis functions (contracted)
-
-      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
-C     
-      CHARACTER*4 ATMNAM
-      CHARACTER*80 XLINE
-      LOGICAL CARTESIAN
-C     
-      DIMENSION IREORDER(NATOMS), NFCT(NATOMS), NAOATM(NATOMS),
-     &          NUFCT(IUATMS), NPOP(IUATMS), NAOUATM(IUATMS),
-     &          ATMNAM(IUATMS), COORD(3,IUATMS)
- 
-      INTEGER ISHL(10)
-C
-C Open MOL file for basis set information. The MOL file is created by
-C joda by processing user input file and basis set library.
-C
-      OPEN(UNIT=10, FILE='MOL', FORM='FORMATTED', STATUS='OLD')
-      REWIND(10)
-C     
-C Read the first five lines. Information on those five lines 
-C are not relevent in the presnt context. 
-C
-      READ(10,'(A)') XLINE
-      READ(10,'(A)') XLINE
-      READ(10,'(A)') XLINE
-      READ(10,'(A)') XLINE
-      READ(10,'(A)') XLINE
-C     
-      LNP1   = 0
-      LNPO   = 0
-      LTNP1  = 0
-      LTNPO  = 0
-C
-      DO 10 IATM = 1, IUATMS
-C
-         READ(10, 1110) ZNUC, IJUNK, NSHL,(ISHL(I),I=1,NSHL)
- 1110    FORMAT(F20.1,10I5)
-C
-         READ(10,1115) ATMNAM(IATM),(COORD(I,IATM),I=1,3)
- 1115    FORMAT(A4,3F20.12)
-C
-         NUFCT(IATM) = 0
-         NAOTMP      = 0
-C
-         DO 20 I = 1, NSHL
-            NPT  = 0
-            NAOT = 0
-C
-            DO 21 I1 = 1, ISHL(I)
-C
-               READ(10,1120) NP1, NAO
- 1120          FORMAT(2I5)
-C
-               NPT  = NPT  + NP1
-               NAOT = NAOT + NAO
-C
-               IF (CARTESIAN) THEN 
-                  NP2 = I*(I + 1)/2 
-               ELSE
-                  NP2 = 2*I - 1
-               ENDIF
-C
-               NAOTMP = NAOTMP + NP2*NAO
-               NUFCT(IATM) = NUFCT(IATM) + NP2*NP1
-C
-               NLN = (NAO-3)/4
-               IF ((NAO-3) .GT. (NLN*4)) NLN = NLN + 1
-               NLN = (NLN + 1)*NP1
-C
-               DO 30 J=1,NLN
-                  READ(10,'(A)') XLINE
- 30            CONTINUE
-C
-               IF(NPT .GT. LNP1) THEN
-                  IF(NPT .GT. LTNP1) LTNP1 = NPT
-               ENDIF
-C
-               ITMP = NPT*NAOT
-               IF(ITMP .GT. LNPO) THEN
-                  IF(ITMP .GT. LTNPO) LTNPO = ITMP
-               ENDIF
-C
- 21         CONTINUE
- 20      CONTINUE
-C
-         IF (LTNP1 .GT. LNP1) LNP1 = LTNP1
-         IF (LTNPO .GT. LNPO) LNPO = LTNPO
-C
-         NAOUATM(IATM) = NAOTMP
-C
- 10   CONTINUE
-C     
-      ITFCT = 0
-      DO 110 IATM = 1, IUATMS
-         DO 120 IEQATM = 1, NPOP(IATM)
-            ITFCT = ITFCT + NUFCT(IATM)
- 120     CONTINUE
- 110  CONTINUE
-C     
-C Fill out NFCT, NAOATM and NMOMFCT for all atoms.
-C
-      ICNT   = 0
-      NBASIS = 0
-      DO 1011 II = 1, IUATMS
-C
-         DO 1020 IJ = 1, NPOP(II)
-C
-            ICNT = ICNT + 1
-            NFCT(IREORDER(ICNT)) = NUFCT(II)
-            NAOATM(IREORDER(ICNT))= NAOUATM(II)
-            NBASIS = NBASIS + NAOUATM(II)
-C
- 1020    CONTINUE
- 1011 CONTINUE
-C     
-      RETURN
-      END
-
-C
-      SUBROUTINE READ_BASIS_INFO(FNAME, IUATMS, NATOMS, NPOP, IREORDER, 
-     &                           CARTESIAN, ITFCT, LNP1, LNPO, 
+      SUBROUTINE READ_BASIS_INFO(FNAME, IUATMS, NATOMS, NPOP, IREORDER,
+     &                           CARTESIAN, ITFCT, LNP1, LNPO,
      &                           NFCT, NBASIS, ALPHA, IXALPHA,
      &                           PCOEFF, IXPCOEF,
-     &                           ATMNAM, COORD, NAOATM)
+     &                           ATMNAM, COORD,Atom_COORDS,
+     &                           ALPHA_NORM,NAOATM)
 C
 C     ----INPUT ARGUMENTS----
 C
@@ -420,17 +365,17 @@ C
       IMPLICIT DOUBLE PRECISION (A-H, O-Z)
       include 'basis_info.h'
 C     
-      CHARACTER*(*) FNAME 
+      CHARACTER*(*) FNAME
       CHARACTER*80 XLINE
       CHARACTER*4 ATMNAM(NATOMS)
       LOGICAL CARTESIAN
 C     
       DIMENSION NPOP(IUATMS),IREORDER(NATOMS), NFCT(NATOMS), 
-     &          NAOATM(NATOMS), 
-     &          PCOEFF(ITFCT*NBASIS), 
+     &          PCOEFF(ITFCT*NBASIS), CNAOATM(NATOMS),
      &          ALPHA(ITFCT), 
-     &          SALPHA(LNP1), SPCOEF(LNPO),
-     &          COORD(3,*)
+     &          SALPHA(LNP1), SPCOEF(LNPO), SALPHA_NORM(LNP1),
+     &          COORD(3,*), Atom_coords(3,Natoms),
+     &          ALPHA_NORM(ITFCT)
 
       INTEGER IXALPHA(*), IXPCOEF(*)
 c     INTEGER ntot_alpha, ntot_pcoef, ntot_shells  
@@ -468,22 +413,29 @@ C
       nxt_alpha = 1
       nxt_pcoef = 1 
 
-      write(6,*) ' COORDS IN READ ' 
-
       DO 10 IATM = 1, IUATMS
 C
          READ(10,1000) ZNUC, IJUNK, NSHL,(ISHL(I),I=1,NSHL)
  1000    FORMAT(F20.1,10I5)
 C
          READ(10,1010) ATMNAM(IATM), X, Y, Z
+#ifdef _DEBUG_LVL0
+
          write(6,*) iatm, ATMNAM(IATM), x, y, z 
+#endif
  1010    FORMAT(A4,3F20.12)
 C     
          IDGOFF = 0
          IOFF   = 0
          JOFF   = 0
          NUNQSHL= 0
-C
+
+C-The ECP arrays added, Ajith Perera, 04/2012----
+
+         Atom_COORDS(1,IATM) = X
+         Atom_COORDS(2,IATM) = Y
+         Atom_COORDS(3,IATM) = Z
+C---
          DO 28 LL = 1, NSHL
 C
             NPT=0
@@ -508,6 +460,10 @@ C
 C
                DO 32 I = 1, NP1
                   READ(10,1060) SALPHA(I),(SPCOEF((J-1)*NP1+I),J=1,NAO)
+
+                  SALPHA_NORM(I) = (4.0D+00*SALPHA(I))**
+     &                             (0.50D+00*DBLE(LL)+
+     &                             0.25D+00)*PICNST
  32            CONTINUE
 C     
 C Renormalize the atomic orbitals. Multiply the renormalized
@@ -536,11 +492,14 @@ C
                   XNORM=1.D+00/DSQRT(SUM)
 C
                   DO 38 I = 1, NP1
-c                    SPCOEF((INAO-1)*NP1+I)= SPCOEF((INAO-1)*NP1+I)*
-c    &                                       XNORM*PICNST*
-c    &                                       (4.D+00*SALPHA(I))**
-c    &                                       (0.5D+00*REAL(LL)+
-c    &                                        0.25D+00)
+
+
+CSSS                    SPCOEF((INAO-1)*NP1+I)= SPCOEF((INAO-1)*NP1+I)*
+CSSS     &                                       XNORM*PICNST*
+CSSS     &                                       (4.D+00*SALPHA(I))**
+CSSS     &                                       (0.5D+00*REAL(LL)+
+CSSS     &                                        0.25D+00)
+
                      SPCOEF((INAO-1)*NP1+I)= SPCOEF((INAO-1)*NP1+I)*
      &                                       XNORM
  38               CONTINUE
@@ -586,7 +545,8 @@ c---------------------------------------------------------------------------
 
                ixalpha(ishell) = nxt_alpha
                do i = 1, np1
-                  alpha(nxt_alpha+i-1) = salpha(i)
+                  alpha(nxt_alpha+i-1)      = salpha(i)
+                  alpha_norm(nxt_alpha+i-1) = salpha_norm(i)
                   ntot_alpha = ntot_alpha + 1 
                enddo
        
@@ -619,38 +579,48 @@ c     ntot_alpha    mumber of exponents
 c     ntot_pcoef    number of exponentcients  
 c     ntot_shells   number of shells 
 c     alpha         array of exponents 
+c     alpha_norm    expoent dependent normalization factor
 c     pcoeff        array of coefficients 
 c     ixalpha       array indicating the beginning index for each alpha/shell    
 c     ixcoeff       array indicating the beginning index for each pcoeff/shell    
-
+#ifdef _DEBUG_LVL0
       write(6,*) ' Total number of alphas', ntot_alpha 
       write(6,*) ' Total number of pcoeff', ntot_pcoef 
       write(6,*) ' Total number of shells', ntot_shells  
+#endif
+
       do n = 1, ntot_shells 
          tixalpha(n) = ixalpha(n) 
          tixpcoeff(n) = ixpcoef(n) 
       enddo 
-C      write(6,*) ' IXALPHAs ' 
-C      do i = 1, ntot_shells   
-C         write(6,*) '     ', i, tixalpha(i) 
-C      enddo 
-C      write(6,*) ' ALPHAs ' 
-      do i = 1, ntot_alpha 
-         talpha(i) = alpha(i)
-C         write(6,*) '     ', i, alpha(i) 
-      enddo 
-C      write(6,*) ' PCoeffs ' 
+      do i = 1, ntot_alpha
+         talpha(i)      = alpha(i)
+         talpha_norm(i) = alpha_norm(i)
+      enddo
       do i = 1, ntot_pcoef  
          tpcoeff(i) = pcoeff(i) 
-C         write(6,*) '     ', i, pcoeff(i) 
       enddo 
-      write(6,*) ' tCoords ' 
       do i = 1, 3 
-C         write(6,*) '     ', i, (coord(i,n), n=1, ntot_shells) 
       do n = 1, ntot_shells 
          tcoord(i,n) = coord(i,n) 
       enddo 
       enddo 
+
+#ifdef _DEBUG_LVL0
+      Write(*,*) atom_coords
+      write(6,*) ' IXALPHAs '
+      write(6,"(5(1x,I4))")    (tixalpha(i), i=1,ntot_shells)
+      write(6,*) ' ALPHAs '
+      write(6,"(5(1x,F15.8))") (Alpha(i), i=1,ntot_alpha)
+      write(6,*) ' ALPHA NORMS '
+      write(6,"(5(1x,F15.8))") (tAlpha_norm(i), i=1,ntot_alpha)
+      write(6,*) ' PCoeffs '
+      write(6,"(5(1x,F15.8))") (tpcoeff(i), i=1,ntot_pcoef)
+      write(6,*) 'Shell coordinates '
+      do i=1,3
+      write(6,"(3(1x,F15.8))") (tcoord(i,n), n=1,3*ntot_shells)
+      enddo 
+#endif
 C
       close(10)
       RETURN

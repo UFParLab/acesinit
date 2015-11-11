@@ -285,6 +285,15 @@ set(ACESINIT_SOURCEFILES
     src/aces23/dsyev.F;
     src/aces23/daxpy.F;
     src/aces23/built_cmp2zmat.F;
+    src/aces23/charges.F;
+    src/aces23/atgrep.F;
+    src/aces23/ecpdef.F;
+    src/aces23/ecppar.F;
+    src/aces23/ecpget.F;
+    src/aces23/wrecp.F;
+    src/aces23/lstr.F;
+    src/aces23/iattop.F;
+    src/aces23/rdecp.F;
     src/symcor/grad2fcm.F;
     src/symcor/setgrd.F;
     src/symcor/aces_ja_truncate.F;
@@ -478,6 +487,7 @@ set(ACESINIT_SOURCEFILES
     src/include/istart.com;
     src/include/ric_heap.com;
     src/include/basis_info.h;
+    src/include/ecp_info.h;
     src/aces_setup/setup_main.F)
 
 
