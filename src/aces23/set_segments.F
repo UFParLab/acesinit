@@ -32,10 +32,20 @@ c As a test just set occ fragmants
 c Determine the effective mx_occ_seg_size 
 
       nsegs = nocc_orbitals/mx_occ_seg_size 
-      write(6,*) ' VFL nsegs - ', nsegs, mx_occ_seg_size 
+
+#ifdef _DEBUG_LVL0
+      Write(*,*)
+      write(6,"(a,2I4)") ' The nsegs @-set_naocc_segs', nsegs, 
+     *                     mx_occ_seg_size 
+#endif 
       if (nsegs*mx_occ_seg_size .ne. nocc_orbitals) nsegs = nsegs + 1 
       mx_occ_seg_size = nocc_orbitals/nsegs 
-      write(6,*) ' VFL nsegs - ', nsegs, mx_occ_seg_size 
+
+#ifdef _DEBUG_LVL0
+      Write(*,*)
+      write(6,"(a,2I4)") ' The nsegs @-set_naocc_segs', nsegs, 
+     *                     mx_occ_seg_size 
+#endif 
 
 100   continue 
       nocc = 0 
@@ -75,15 +85,23 @@ c        mx_occ_seg_size = mx_occ_seg_size + 1
 c        go to 100 
 c     endif 
 
-      write(6,*) ' NaOCC = ', nocc 
+#ifdef _DEBUG_LVL0
+      Write(*,*) 
+      write(6,"(a,I3)") ' NaOCC = ', nocc 
+#endif 
       start = 0 
       do i = 1, n_frag 
          n_aocc(i) = nocc_frag(i) 
-         write(6,*) '    ', i, n_aocc(i)
+#ifdef _DEBUG_LVL0
+         write(6,"(2I4)") i, n_aocc(i)
+#endif 
          do j = 1, nocc_frag(i)
             baocc_frag(i,j) = bocc_frag(i,j) + start  
             eaocc_frag(i,j) = eocc_frag(i,j) + start  
-            write(6,*) '          ', baocc_frag(i,j), eaocc_frag(i,j) 
+
+#ifdef _DEBUG_LVL0
+            write(6,"(2I4)") baocc_frag(i,j), eaocc_frag(i,j) 
+#endif 
          enddo 
          start = start + (eaocc_frag(i,nocc_frag(i)) -
      *                    baocc_frag(i,1) + 1)   
@@ -113,10 +131,16 @@ c As a test just set virt fragmants
 c Determine the effective mx_occ_seg_size 
 
       nsegs = nvirt_orbitals/mx_virt_seg_size 
-      write(6,*) ' VFL nsegs - ', nsegs, mx_virt_seg_size 
+#ifdef _DEBUG_LVL0
+      write(6,"(a,2I4)") ' The nsegs @-set_navirt_segs', nsegs, 
+     *                     mx_virt_seg_size 
+#endif 
       if (nsegs*mx_virt_seg_size .ne. nvirt_orbitals) nsegs = nsegs + 1 
       mx_virt_seg_size = nvirt_orbitals/nsegs 
-      write(6,*) ' VFL nsegs - ', nsegs, mx_virt_seg_size 
+#ifdef _DEBUG_LVL0
+      write(6,"(a,2I4)") ' The nsegs @-set_navirt_segs', nsegs, 
+     *                     mx_virt_seg_size 
+#endif 
 
 100   continue 
 
@@ -156,17 +180,26 @@ c     if (nvirt .gt. nsegs) then
 c        mx_virt_seg_size = mx_virt_seg_size + 1 
 c        go to 100 
 c     endif 
+#ifdef _DEBUG_LVL0
+      write(*,*)
+      write(6,"(a,3I4)") ' NaVIRT = ', nvirt, n_frag, virt_frag(1)  
+#endif 
 
-
-      write(6,*) ' NaVIRT = ', nvirt, n_frag, virt_frag(1)  
       start = nocc_orbitals 
       do i = 1, n_frag 
          n_avirt(i) = nvirt_frag(i) 
-         write(6,*) '    ', i, n_avirt(i)
+#ifdef _DEBUG_LVL0
+      write(*,*)
+      write(6,"(a,I4)") "i, n_avirt(i): " i, n_avirt(i)
+#endif 
          do j = 1, nvirt_frag(i)
             bavirt_frag(i,j) = bvirt_frag(i,j) + start  
             eavirt_frag(i,j) = evirt_frag(i,j) + start  
-            write(6,*) '          ', bavirt_frag(i,j), eavirt_frag(i,j) 
+#ifdef _DEBUG_LVL0
+      write(*,*)
+      write(6,'(a,2I4)") "bavirt_frag, eavirt_frag", bavirt_frag(i,j), 
+     *                    eavirt_frag(i,j) 
+#endif 
          enddo 
          start = eavirt_frag(i,nvirt_frag(i)) 
       enddo 
@@ -192,10 +225,19 @@ c As a test just set occ fragmants
       endif 
 
       nsegs = nocc_orbitals/mx_occ_seg_size 
-      write(6,*) ' VFL nsegs - ', nsegs, mx_occ_seg_size 
+#ifdef _DEBUG_LVL0
+      Write(*,*)
+      write(6,"(a,2I4)") ' The nsegs @-set_nbocc_segs', nsegs,
+     *                     mx_occ_seg_size
+#endif 
       if (nsegs*mx_occ_seg_size .ne. nocc_orbitals) nsegs = nsegs + 1 
       mx_occ_seg_size = nocc_orbitals/nsegs 
-      write(6,*) ' VFL nsegs - ', nsegs, mx_occ_seg_size 
+
+#ifdef _DEBUG_LVL0
+      Write(*,*)
+      write(6,"(a,2I4)") ' The nsegs @-set_nbocc_segs', nsegs,
+     *                     mx_occ_seg_size
+#endif 
 
 100   continue 
 
@@ -236,7 +278,9 @@ c        mx_occ_seg_size = mx_occ_seg_size + 1
 c        go to 100 
 c     endif 
 
-      write(6,*) ' NbOCC = ', nocc 
+#ifdef _DEBUG_LVL0
+      write(6,"(a,I4)") ' NbOCC = ', nocc 
+#endif 
       start = 0 
       do i = 1, n_frag 
          n_bocc(i) = nocc_frag(i) 
@@ -244,7 +288,11 @@ c     endif
          do j = 1, nocc_frag(i)
             bbocc_frag(i,j) = bocc_frag(i,j) + start  
             ebocc_frag(i,j) = eocc_frag(i,j) + start  
-            write(6,*) '          ', bbocc_frag(i,j), ebocc_frag(i,j) 
+#ifdef _DEBUG_LVL0
+      write(6,*) 
+      write(6,*) "bbocc_frag(i,j), ebocc_frag(i,j): ", bbocc_frag(i,j), 
+     *                             ebocc_frag(i,j
+#endif 
          enddo 
          start = start + (ebocc_frag(i,nocc_frag(i)) -
      *                    bbocc_frag(i,1) + 1)   
@@ -273,10 +321,18 @@ c As a test just set virt fragmants
 c Determine the effective mx_occ_seg_size 
 
       nsegs = nvirt_orbitals/mx_virt_seg_size 
-      write(6,*) ' VFL nsegs - ', nsegs, mx_virt_seg_size 
+#ifdef _DEBUG_LVL0
+      Write(*,*)
+      write(6,"(a,2I4)") ' The nsegs @-set_nbvirt_segs', nsegs,
+     *                     mx_vrt_seg_size
+#endif
       if (nsegs*mx_virt_seg_size .ne. nvirt_orbitals) nsegs = nsegs + 1 
       mx_virt_seg_size = nvirt_orbitals/nsegs 
-      write(6,*) ' VFL nsegs - ', nsegs, mx_virt_seg_size 
+#ifdef _DEBUG_LVL0
+      Write(*,*)
+      write(6,"(a,2I4)") ' The nsegs @-set_nbvirt_segs', nsegs,
+     *                     mx_vrto_seg_size
+#endif
 
 100   continue 
 
@@ -315,16 +371,27 @@ c     if (nvirt .gt. nsegs) then
 c        mx_virt_seg_size = mx_virt_seg_size + 1 
 c        go to 100 
 c     endif 
-
-      write(6,*) ' NbVIRT = ', nvirt 
+#ifdef _DEBUG_LVL0
+      write(*,*)
+      write(6,"(a,I4)") ' NbVIRT = ', nvirt 
+#endif
       start = nocc_orbitals 
       do i = 1, n_frag 
          n_bvirt(i) = nvirt_frag(i) 
-         write(6,*) '    ', i, n_bvirt(i)
+
+#ifdef _DEBUG_LVL0
+      write(*,*)
+      write(6,"(a,2I4)")  "i, n_bvirt(i): ", i, n_bvirt(i)
+#endif
          do j = 1, nvirt_frag(i)
             bbvirt_frag(i,j) = bvirt_frag(i,j) + start  
             ebvirt_frag(i,j) = evirt_frag(i,j) + start  
-            write(6,*) '          ', bbvirt_frag(i,j), ebvirt_frag(i,j) 
+
+#ifdef _DEBUG_LVL0
+      write(*,*)
+      write(6,"(a,2I4)")  "bbvirt_frag(i,j), ebvirt_frag(i,j): ", 
+     *                     bbvirt_frag(i,j), ebvirt_frag(i,j)
+#endif
          enddo 
          start = ebvirt_frag(i,nvirt_frag(i)) 
       enddo 
@@ -336,7 +403,9 @@ c     endif
       include 'frag_def.h'
       integer i, j, n 
 
-      write(6,*) ' Defining FRAGMENT lists' 
+#ifdef _DEBUG_LVL0
+      write(6,"(a)") ' Defining FRAGMENT lists' 
+#endif 
 
 c Determine the AO frag segment list 
 
@@ -344,71 +413,100 @@ c Determine the occupied frag segment list
 
 c Determine the AO frag segment list 
 
-      write(6,*) ' OCC list ' 
+#ifdef _DEBUG_LVL0
+      write(6,"(a)") ' OCC list '
+#endif 
 
       n = 0 
       do i = 1, nfrags 
       do j = 1, n_occ(i) 
          n = n + 1 
          w_frag_occ(n) = i 
-         write(6,*) n, w_frag_occ(n) 
+#ifdef _DEBUG_LVL0
+         write(*,*)
+         write(6,"(a,2I4)") "n, w_frag_occ(n) :" n, w_frag_occ(n)
+#endif 
       enddo 
       enddo 
 
-      write(6,*) ' OCCA list ' 
-
+#ifdef _DEBUG_LVL0
+      write(6,"(a)") ' OCCA list '
+#endif 
       n = 0 
       do i = 1, nfrags 
       do j = 1, n_aocc(i) 
          n = n + 1 
          w_frag_aocc(n) = i 
-         write(6,*) n, w_frag_aocc(n) 
+#ifdef _DEBUG_LVL0
+         write(*,*)
+         write(6,"(a,2I4)") "n, w_frag_aocc(n) :" n, w_frag_aocc(n)
+#endif 
       enddo 
       enddo 
 
-      write(6,*) ' OCCB list ' 
+#ifdef _DEBUG_LVL0
+      write(6,"(a)") ' OCCB list '
+#endif 
 
       n = 0 
       do i = 1, nfrags 
       do j = 1, n_bocc(i) 
          n = n + 1 
          w_frag_bocc(n) = i 
-         write(6,*) n, w_frag_bocc(n) 
+#ifdef _DEBUG_LVL0
+         write(*,*)
+         write(6,"(a,2I4)") "n, w_frag_bocc(n) :" n, w_frag_bocc(n)
+#endif 
       enddo 
       enddo 
 
 c Determine the virtual frag segment list 
 
-      write(6,*) ' VIRT list ' 
+#ifdef _DEBUG_LVL0
+      write(6,"(a)") ' VIRT list '
+#endif 
 
       n = 0 
       do i = 1, nfrags 
       do j = 1, n_virt(i) 
          n = n + 1 
          w_frag_virt(n) = i 
-         write(6,*) n, w_frag_virt(n) 
+#ifdef _DEBUG_LVL0
+         write(*,*)
+         write(6,"(a,2I4)") "n, w_frag_virt(n) :" n, w_frag_virt(n)
+#endif 
       enddo 
       enddo 
 
-      write(6,*) ' VIRTA list ' 
+#ifdef _DEBUG_LVL0
+      write(6,"(a)") ' VIRTA list '
+#endif 
 
       n = 0 
       do i = 1, nfrags 
       do j = 1, n_avirt(i) 
          n = n + 1 
          w_frag_avirt(n) = i 
-         write(6,*) n, w_frag_avirt(n) 
+#ifdef _DEBUG_LVL0
+         write(*,*)
+         write(6,"(a,2I4)") "n, w_frag_avirt(n) :" n, w_frag_avirt(n)
+#endif 
       enddo 
       enddo 
 
-      write(6,*) ' VIRTB list ' 
+#ifdef _DEBUG_LVL0
+      write(6,"(a)") ' VIRTB list '
+#endif 
 
       n = 0 
       do i = 1, nfrags 
       do j = 1, n_bvirt(i) 
          n = n + 1 
          w_frag_bvirt(n) = i 
-         write(6,*) n, w_frag_bvirt(n) 
+#ifdef _DEBUG_LVL0
+         write(*,*)
+         write(6,"(a,2I4)") "n, w_frag_bvirt(n) :" n, w_frag_bvirt(n)
+#endif 
       enddo 
       enddo 
 

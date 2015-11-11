@@ -12,7 +12,7 @@ C  GNU General Public License for more details.
 
 C  The GNU General Public License is included in this distribution
 C  in the file COPYRIGHT.
-      subroutine nuclear_nuclear_gradient(hess, nnhess, natoms)
+      subroutine nuclear_nuclear_gradient(hess, nnhess, natoms_l)
 c--------------------------------------------------------------------------
 c   Calculates the nuclear-nuclear contribution to the gradient.
 c--------------------------------------------------------------------------
@@ -21,22 +21,22 @@ c--------------------------------------------------------------------------
       include 'hess.h'
       include 'dbugcom.h'
 
-      integer i, j, k, natoms
+      integer i, j, k, natoms_l
       integer ihess, jhess, khess, iatom, jatom
       double precision x, y, z, r, r3, r5, pkl
-      double precision hess(3*natoms,3*natoms)
-      double precision NNhess(3*natoms,3*natoms)
-      double precision d(natoms,natoms)
+      double precision hess(3*natoms_l,3*natoms_l)
+      double precision NNhess(3*natoms_l,3*natoms_l)
+      double precision d(natoms_l,natoms_l)
 
-      if (natoms .gt. max_centers) then
+      if (natoms_l .gt. max_centers) then
          print *,'Error: natoms = ',natoms,' is larger than ',
      *      'max_centers ',max_centers
          call abort_job()
       endif
   
-      DO I = 1, NATOMS  
+      DO I = 1, NATOMS_L
 C
-         DO J = 1, NATOMS  
+         DO J = 1, NATOMS_L
 
             if (i .ne. j) then 
 C

@@ -1,4 +1,3 @@
-C  Copyright (c) 2003-2010 University of Florida
 C
 C  This program is free software; you can redistribute it and/or modify
 C  it under the terms of the GNU General Public License as published by
@@ -21,6 +20,8 @@ C  in the file COPYRIGHT.
       include 'trace.h'
       include 'dropmo.h'
       include 'sial_config_params.h'
+      include 'basis_info.h'
+      include 'ecp_info.h'
 #ifdef ALTIX
       include 'sheap.h'
 #endif
@@ -29,31 +30,51 @@ C  in the file COPYRIGHT.
       integer moa, mob
       integer ntemp
 
-      integer i, j, n, ierr
+      integer i, j, k, n, ierr, Ipr
       integer nalpha, npcoef
       integer dummy
       integer lnp1, lnpo
       integer ione
-      integer          nfct(max_centers), nufct(max_centers)
-      integer          naoatm(max_centers)
-      integer          npop(max_centers)
-      integer          ireorder(max_centers) 
-      integer          natoms
-      integer          nscfa_fock, nscfb_fock
-      integer          ieom_temprt, ieom_roots, iexcite  ! Watson Added
-      character*4      atmnam(max_centers)
-      logical          cartesian
-      logical          uhf
+      integer nfct(max_centers), nufct(max_centers)
+      integer naoatm(max_centers)
+      integer npop(max_centers)
+      integer ireorder(max_centers) 
+      integer iqmstr_tmp(max_centers),jcostr_tmp(max_centers,Maxjco)
+      integer nucstr_tmp(max_centers,Maxang,Maxjco)
+      integer nrcstr_tmp(max_centers,Maxang,Maxjco)
+      integer Jstrt_tmp(max_shells),Jrs_tmp(max_shells)
+  
+      integer nscfa_fock, nscfb_fock
+      integer ieom_temprt, ieom_roots, iexcite     ! Watson Added
+      integer ipolarizability, ig_tensor, ia_tensor! perera Added
+      integer id_tensor                            ! perera Added
+      integer iguess, ilshfta,  ilshftb, ibcc_conv
+      integer idiis_start, idiis_order 
+      integer idamp_type, idamp_tol,ilindep_tol,ilock_orbitals 
+      integer iintgrl_tol, ilock_orbocc, idamp_end
+      integer ijunk(100)
+      integer iflags(500)
+
+      character*4  atmnam(max_centers)
+      Character*2  mtype(Max_centers)
+      Character*80 Cnick(Max_centers)
+      Character*80 Ecpnam(Max_centers)
+    
+      logical      cartesian
+      logical      uhf
       logical dropit 
-      integer          ijunk(500)
       logical*8        l8false
-      double precision dbuf(1)
+
+      common /flags/ iflags
+
+      double precision dbuf(1), atom_coords(3,max_centers)
+      double precision vnn, nuclear_nuclear_repulsion_energy
+
 #ifdef ALTIX
       pointer (dptr, dbuf)
 #else
       common dbuf
 #endif
-      double precision vnn, nuclear_nuclear_repulsion_energy
 
 #ifdef ALTIX
       dptr = dshptr   ! set dbuf ptr to shared memory.
@@ -65,6 +86,7 @@ c   be read.
 c-------------------------------------------------------------------------
 
       call scf_init(vnn)
+      Write(6,*) "after scf_init"
 
 c-------------------------------------------------------------------------
 c   Read original MOL file, create a new one with the subshells split.
@@ -88,12 +110,52 @@ c   coefficients and exponents are not read in at this stage.
 c-------------------------------------------------------------------------
 
 CDEBUG      call simple_inspect_mol('CHSSI.MOL', max_centers, max_shells, 
+
+      IECP_ON = iflags(71)
+
       call simple_inspect_mol('MOL', max_centers, max_shells, 
      *           ncenters, nshells, nspc, 
      *           cartesian, ITFCT, LNP1, LNPO, Nfct,
      *           nufct, nbasis, naobasis, nCFPS, nPFpS,
-     *           naoatm, ivAngMom, atom)
+     *           naoatm, ivAngMom, atom, 
+     *
+     *           Iecp_on, Maxang, Maxjco, Nucstr_tmp, Nrcstr_tmp, 
+     *           Iqmstr_tmp, 
+     *           Jcostr_tmp, jstrt_tmp, Jrs_tmp, Atmnam, Charge)
 
+#ifdef _DEBUG_LVL0
+C---
+      Write(6,"(a,a,7(1x,I4))") "natoms,nshells,ITFCT,LNP1,lnpo",
+     &                          "nbasis,NAOBASIS:",ncenters,nshells,
+     &                                         ITFCT,LNP1,lnpo,
+     &                                        nbasis,NAOBASIS
+      Write(6,*) "Entering inspect mol", iecp_on
+      Write(6,*)
+      Write(6,"(a)") "The number of con. function per shell"
+      Write(6,"(10(1x,I4))") (nCFpS(i), i=1, nshells)
+      Write(6,"(a)") "The number of prim. function per shell"
+      Write(6,"(10(1x,I4))") (nPFpS(i), i=1, nshells)
+      Write(6,"(a)") "The Iqmstr"
+      Write(6,"(10(1x,I4))") (Iqmstr_tmp(i), i=1, ncenters)
+      Write(6,"(a)") "The jcostr"
+      Do i=1, Ncenters
+        Write(6,"(10(1x,I4))") (jcostr_tmp(i,j),j=1,4)
+      Enddo
+      Write(6,"(a)") "The Nucstr"
+      Do i=1, Ncenters
+        Write(6,"(10(1x,I4))") ((Nucstr_tmp(i,j,k),j=1,4),k=1,Maxjco)
+      Enddo
+      Write(6,"(a)") "The Nrcstr"
+      Do i=1, Ncenters
+        Write(6,"(10(1x,I4))") ((Nrcstr_tmp(i,j,k),j=1,4),k=1,Maxjco)
+      Enddo
+      Write(6,"(a)") "The jstrt"
+      Write(6,"(10(1x,I4))") (Jstrt_tmp(i), i=1, Nshells)
+      Write(6,"(a)") "The jrs"
+      Write(6,"(10(1x,I4))") (Jrs_tmp(i), i=1, Nshells)
+      Write(6,*)
+#endif 
+C
       write(6,*) ' NBASIS AFTER SIMPLE_INSPECT ', nbasis  
       if (cartesian) then
          ispherical = 0
@@ -114,14 +176,14 @@ C---------------------------------------------------------------------------
      *               ix_hess, .true., ierr)
       if (ierr .ne. 0) then
          print *,'Error attempting to malloc hessian.'
-         STOP 
+         call abort_job ()
       endif 
 
       call mem_alloc(dbuf,  9*ncenters*ncenters, bytes_per_double, 
      *               ix_nnhess, .true., ierr)
       if (ierr .ne. 0) then
          print *,'Error attempting to malloc nuclear-nuclear hessian.'
-         STOP 
+         call abort_job ()
       endif 
 
       call nuclear_nuclear_gradient(dbuf(ix_hess), dbuf(ix_NNhess), 
@@ -129,6 +191,7 @@ C---------------------------------------------------------------------------
 
 c--------------------------------------------------------------------------
 c   Allocate memory for exponents, coordinates, and basis functions.
+c   and exponent dependent norm,
 c--------------------------------------------------------------------------
 
       nalpha = 0
@@ -143,11 +206,18 @@ c--------------------------------------------------------------------------
      *               .true., ierr)
       if (ierr .ne. 0) then
          print *,'Error attempting to malloc basis data.'
-         STOP 
+         call abort_job ()
       endif
 
       ialpha  = master_icoord + 3*nshells
-      ipcoeff = ialpha + nalpha
+      ipcoeff = ialpha  +  nalpha
+
+      call mem_alloc(dbuf, nalpha, bytes_per_double, ialpha_norm,
+     *               .true., ierr)
+      if (ierr .ne. 0) then
+         print *,'Error attempting to malloc basis data.'
+         call abort_job ()
+      endif
 
 c-------------------------------------------------------------------------
 c   Read orbital values from JOBARC.
@@ -166,6 +236,7 @@ c-------------------------------------------------------------------------
       noccupied       = nalpha_occupied
 
       call igetrec(1,'JOBARC','IFLAGS',100,iJunk)
+      call igetrec(1,'JOBARC','IFLAGS2',500,iflags)
 
 c------------------------------------------------------------------------
 c   Retrieve flags parameters.
@@ -197,10 +268,16 @@ c------------------------------------------------------------------------
       scf_beg  = ijunk(40)
 
 c     Kluggy way of dealing with this VFL 1/2/2013 
-      if (scf_beg .ge. 8) then 
-         write(6,*) ' Resetting scf_beg to 2 '
-         scf_beg = 2 
-      endif 
+C     No longer needed
+C      if (scf_beg .ge. 8) then 
+C         write(6,*) ' Resetting scf_beg to 2 '
+C         scf_beg = 2 
+C      endif 
+C    The integral tolerance is moved to here from scflindep.h
+C    Ajith Perera, 2/2015.
+C    
+      iintgrl_tol = iflags(108)
+      intgrl_tol  = iintgrl_tol
 
       vib_freq_calc = .false. 
       if (ijunk(54) .ne. 0) vib_freq_calc = .true.
@@ -228,7 +305,58 @@ C
 C
 C Watson
 C
+C Ajith Perera for second-order properties; 04/2014.
+  
+       iPolarizability = 0
+       ia_tensor = 0
+       ig_tensor = 0
+       id_tensor = 0
+       If (Ijunk(18) .EQ. 14 .OR. Ijunk(18) .EQ. 11) 
+     &     iPolarizability = 1
+       If (Ijunk(18) .EQ. 15 .OR. Ijunk(18) .EQ. 1) ia_tensor = 1
+       If (Ijunk(18) .EQ. 16) ig_tensor = 1
+       If (ijunk(18) .EQ. 17) id_tensor = 1
+  
+       polarizability = iPolarizability
+       a_tensor       = ia_tensor
+       g_tensor       = ig_tensor
+       d_tensor       = id_tensor
+C
+C Ajith Perera, Bruecknere convergence criteria, 12/2014
+C
+        bcc_conv = ijunk(76)
+        bcc_conv  = 10.0d0**(-ibcc_conv)
+C 
+C Initial SCF orbitals, level shifting parameters and damping.
+C
+        Iguess = ijunk(45)
+        guess  = Iguess
 
+        ilshfta = Iflags(111)
+        ilshftb = Iflags(112)
+
+        lshft_a1 = ilshfta
+        lshft_b1 = ilshftb
+
+        Idamp_type     = iflags(109)
+        Idamp_tol      = iflags(110)
+        Ilindep_tol    = ijunk(8)
+        Ilock_orbitals = iflags(160)
+        Ilock_orbocc   = ijunk(41)
+        Idamp_end      = iflags(161)
+        Idiis_start    = ijunk(40)
+        Idiis_order    = ijunk(20)
+  
+  
+        Damp_type     = Idamp_type
+        Damp_tol      = Idamp_tol
+        Lindep_tol    = Ilindep_tol
+        Lock_orbitals = Ilock_orbitals
+        Lock_orbocc   = Ilock_orbocc
+        Damp_end      = Idamp_end
+        Diis_start    = Idiis_start
+        Diis_order    = Idiis_order
+        
 c-------------------------------------------------------------------------
 c   Read IFLAGS2 off JOBARC.
 c-------------------------------------------------------------------------
@@ -459,13 +587,51 @@ c--------------------------------------------------------------------------
          call igetrec(1, 'JOBARC', 'OCCUPYB0', 1, nbeta_occupied)
       endif
 
-CDEBUG      call read_basis_info('CHSSI.MOL', ncenters, ncenters, npop, 
       call read_basis_info('MOL', ncenters, ncenters, npop, 
      *           ireorder, cartesian, itfct, lnp1, lnpo, nfct, 
-     *           nbasis, dbuf(ialpha), ixalpha, 
+     *           nbasis, dbuf(ialpha), ixalpha,
      *           dbuf(ipcoeff), ixpcoef, atmnam, 
-     *           dbuf(master_icoord), naoatm)
- 
+     *           dbuf(master_icoord),atom_coords,dbuf(ialpha_norm),
+     *           naoatm)
+
+#ifdef _DeBUG_LVL0
+      Write(6,*)
+      Write(6,"(a)") "The exponents"
+      Write(6,"(5(1x,F15.8))") (Dbuf(Ialpha+i), i=0, Nalpha-1)
+      Write(6,*)
+      Write(6,"(a)") "The exponentsn norms"
+      Write(6,"(5(1x,F15.8))") (Dbuf(Ialpha_norm+i), i=0, Nalpha-1)
+      Write(6,*)
+      Write(6,"(a)") "The contraction coefs"
+      Write(6,"(5(1x,F15.8))") (dbuf(Ipcoeff+i), i=0, Npcoef-1)
+      Write(6,*)
+      Write(6,*) "Coordinates of shell"
+      Write(6,"(5(1x,F15.8))") (dbuf(master_icoord+i),i=0,3*Nshells-1)
+      Write(6,*)
+      Write(6,*) "Coordinates of atoms"
+      do k=1, Ncenters
+      Write(6, "(3(1x,F12.8))") (atom_coords(i,k), i=1,3)
+      enddo 
+#endif 
+
+C Read the ECP data file and fill arrays in ecp_info.h files. Those
+C will be reread in setup_main and transfer into the .dat file. 
+
+      If (Iecp_on .EQ. 1) then
+         Ierr = 0
+       
+         call charges(CHARGE,mtype,natoms,ierr)
+
+         If (Ierr .EQ. 0) Then
+            Ipr = 0
+            call ecpdef(natoms,mtype,Ecpnam,cnick) 
+            call ecppar(ipr,cnick,CHARGE,natoms,.FALSE.,0)
+         Else
+            write(6,"(a)") 'E R R O R in subroutine chrges!'
+            Call Errex 
+         Endif
+      Endif 
+
 c-------------------------------------------------------------------------
 c   If the SCF has already been performed check if MOs are to be dropped.
 c-------------------------------------------------------------------------
@@ -591,6 +757,8 @@ C--------------------------------------------------------------------------
 c   Reset the number of virtual orbitals if they were dropped. 
 C--------------------------------------------------------------------------
 c
+C JNB: do not do virtual drop for fno sial program. 
+         if(.not. if_fno) then
          nalpha_virtual = nbasis - nalpha_occupied    
          enalpha_virtual = nalpha_virtual
          do i = 1, ndropmo_a 
@@ -604,6 +772,7 @@ c
             if (modrop_b(i) .gt. nbeta_occupied) 
      *      nbeta_virtual = nbeta_virtual - 1  
          enddo 
+         endif
 c
 C--------------------------------------------------------------------------
 c   Reset the number of occupied orbitals if they were dropped. 

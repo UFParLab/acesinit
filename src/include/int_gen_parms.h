@@ -4,6 +4,8 @@ c--------------------------------------------------------------------------
 
       logical if_scf
       logical init_scf
+C JNB
+      logical if_fno
 
 c--------------------------------------------------------------------------
 c   Symmetry restrictions.
@@ -24,8 +26,8 @@ c--------------------------------------------------------------------------
       integer max_centers
       integer max_shells
       
-      parameter (max_centers = 1000)
-      parameter (max_shells = 10000)
+      parameter (max_centers = 300)
+      parameter (max_shells = 5000)
 
 c--------------------------------------------------------------------------
 c   Integral packages supported.
@@ -116,15 +118,20 @@ c nContAOs : total number of contracted functions
 
       integer*8 memptr, i0wrk, ithread
       integer*8 ipkgscr, dpkgscr, icoord, master_icoord, ialpha, ipcoeff
+      integer*8 ialpha_norm
       integer*8 ierdind, icc_beg, icc_end, iscale_fac
       integer*8 iscfa, iscfb, ifocka, ifockb, ifockrohfa, ifockrohfb
-      integer*8 iepsa, iepsb
+      integer*8 iepsa, iepsb, icord
       integer*8 iccbeg, iccend
       integer*8 i1e_sint, i1e_hint
       double precision scf_energy, totenerg
-      double precision damp_init, cc_conv, scf_conv
+      double precision damp_init, cc_conv, scf_conv, bcc_conv
+      integer guess, lshft_a1, lshft_b1, damp_type, damp_tol
+      integer lindep_tol, lock_orbitals, intgrl_tol, damp_end
+      integer lock_orbocc, diis_start, diis_order, natoms, iecp_on
 
       double precision excite, eom_tol, eom_roots ! Watson Added
+      integer polarizability, a_tensor, g_tensor, d_tensor
       double precision reg,stabvalue
 
       integer itrips, itripe
@@ -184,8 +191,15 @@ c nContAOs : total number of contracted functions
      &                     nworkthread, jobarc_exists, geom_opt, 
      &                     vib_freq_calc, fast_erd_memcalc, vib_exact,
      &                     if_scf, calc_2der_integrals,
-     &                     init_scf,
-     &                     last
+     &                     init_scf, if_fno,
+     &                     polarizability,a_tensor,g_tensor,
+     &                     d_tensor, bcc_conv, guess, lshft_a1, 
+     &                     lshft_b1, damp_type, damp_tol, lindep_tol,
+     &                     lock_orbitals, lock_orbocc, intgrl_tol, 
+     &                     damp_end, diis_start, diis_order,
+     &                     natoms, iecp_on, ialpha_norm,
+     &                     last 
+
 
       logical managers_are_workers, master_is_worker
  
@@ -208,3 +222,7 @@ c nContAOs : total number of contracted functions
 
       double precision nngrad, charge, acenter
       common /NNgrad/nngrad(3,max_centers)
+
+      double precision A_iso
+      common /A_iso/A_iso(max_Centers)
+

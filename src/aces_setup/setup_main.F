@@ -20,8 +20,8 @@ c      program setup_main
       include 'frag_def.h'
       include 'sial_config_params.h'
       include 'basis_info.h'
+      include 'ecp_info.h'
       include 'mxatms.par'
-      include 'scflindep.h'
 
       integer max_segments, mxcbf  
       parameter (max_segments = 1000000)
@@ -42,6 +42,7 @@ c      parameter (mxcbf = 500)
 c     integer (C_INT) maxmem 
       integer (C_INT) nsial 
       integer (C_INT) val0
+      integer (C_INT) junk
 c     integer (C_INT) nd
 c     integer (C_INT) d(6)
 c     integer (C_INT) d2(2)
@@ -51,6 +52,12 @@ c     real (C_DOUBLE) sVals(mxcbf,mxcbf)
       real (C_DOUBLE) cVals(3,mxatms)
       real (C_DOUBLE) sVals1(mxcbf)
       integer (C_INT) iVals1(mxcbf)
+      integer (C_INT) Three_natoms 
+
+C C_DOUBLE arrays to handle ECP real variable arrays. 
+C
+      real (C_DOUBLE) Cdbl_Clp(Mxecpprim)
+      real (C_DOUBLE) Cdbl_Zlp(Mxecpprim)
 
       real(C_DOUBLE) dval
 c     real(C_DOUBLE) val(6)
@@ -66,11 +73,45 @@ c     integer (C_INT) indx_cc(max_shells)
       integer (C_INT) ccbeg(max_shells)   
       integer (C_INT) ccend(max_shells)   
       integer (C_INT) intSpherical  
+C
+C C_INT arrays to handle ECP integer variable arrays. 
+C
+      integer (C_INT) Cint_nlp(Mxecpprim) 
+      integer (C_INT) Cint_llmax(Mxatms) 
+      integer (C_INT) Cint_nelecp(mxatms)
+      integer (C_INT) Cint_ipseux(mxatms)
+      integer (C_INT) Cint_klast(Maxang*mxatms)
+      integer (C_INT) Cint_kfirst(Maxang*mxatms)
+
+      integer (C_INT) Cint_iqmstr(mxatms)
+      integer (C_INT) Cint_jcostr(mxatms*maxjco)
+      integer (C_INT) Cint_nucstr(mxatms*max_shells*maxjco)
+      integer (C_INT) Cint_nrcstr(mxatms*max_shells*maxjco)
+      integer (C_INT) Cint_jstrt(max_shells)
+      integer (C_INT) Cint_jrs(max_shells)
+
+C Integer scalar used in ECP (perhaps unused but lets fill it)
+
+      integer (C_INT) Cint_ipseud(1)
+      integer (C_INT) Cint_max_ecp_angmom(1)
+      integer (C_INT) Cint_max_ecp_prims(1)
+      integer (C_INT) Cint_kfirst_last_len(1)
+      integer (C_INT) Cint_necp_atoms(1)
+      integer (C_INT) Cint_natoms(1)
+
+      integer (C_INT) Cint_to_elements(1)
+      integer (C_INT) Cint_jcostr_length(1)    
+      integer (C_INT) Cint_nr_nu_str_length(1) 
+      integer (C_INT) Cint_nshells(1) 
+C
+      integer max_ecp_angmom, max_num_ecp_prims, num_ecp_prims
+      integer necp_atoms, tot_elements_1, tot_elements_2
+      integer kfirst_last_length
 
       character*5 lformat
       character*5 lstring
 
-      integer i, j, kfrag 
+      integer i, j, k, kfrag, jcount, kcount 
       integer icc 
       integer segs(maxsegs)   
       integer saveocc 
@@ -140,7 +181,6 @@ c      call init_setup('jobf10July'//C_NULL_CHAR)
       endif
 
       call scf_init(vnn) 
-
       call verify_aces2_params()
       call write_zmat_auto(jobflow)
       call aces_ja_fin() 
@@ -408,7 +448,9 @@ c     enddo
       sDim1(1) = norbs     
       do i = 1, sDim1(1)
          iVals1(i) = dd(i)
-         write(6,*) ' moarange:', i, dd(i) 
+#ifdef _DEBUG_LVL0
+         write(6,"(a,2I4)") ' moarange:', i, dd(i) 
+#endif 
       enddo
       call set_predefined_integer_array('moa_seg_ranges'//C_NULL_CHAR,1,
      *                                   sDim1, iVals1) 
@@ -428,14 +470,13 @@ c     enddo
          enddo 
       enddo 
 
-c     do i = 1, norbs 
-c        write(6,*) ' NORBS DD :', norbs, dd(i) 
-c     enddo 
-
       call set_mobindex_info(norbs,dd)              ! MO beta index ranges. BOTH occupied and virtual 
       sDim1(1) = norbs     
       do i = 1, sDim1(1)
          iVals1(i) = dd(i)
+#ifdef _DEBUG_LVL0
+         write(6,"(a,2I4)") ' mobarange:', i, dd(i) 
+#endif 
       enddo
       call set_predefined_integer_array('mob_seg_ranges'//C_NULL_CHAR,1,
      *                                   sDim1, iVals1) 
@@ -450,9 +491,10 @@ c-------------------------------------------------------------------------------
 c                              Set the integer constants 
 c------------------------------------------------------------------------------------------  
 
-      write(6,*) ' NORB =', nsegs  
-      write(6,*) ' NAOOCC =', nafocc  
-      write(6,*) ' NBOOCC =', nbfocc  
+      Write(*,*)
+      write(6,*) ' NORB    =', nsegs  
+      write(6,*) ' NAOOCC  =', nafocc  
+      write(6,*) ' NBOOCC  =', nbfocc  
       write(6,*) ' NAFVIRT =', nafvirt    
       write(6,*) ' NBFVIRT =', nbfvirt    
   
@@ -493,7 +535,7 @@ c-------------------------------------------------------------------------------
       val0 = nbeta_occupied 
       call set_constant('nbocc'//C_NULL_CHAR, val0)      ! Number of beta occupied orbital   
 
-      val0 = scf_iter 
+      val0 = scf_iter
       call set_constant('scf_iter'//C_NULL_CHAR, val0)   ! Maximum number of scf iterations 
       val0 = cc_iter 
       call set_constant('cc_iter'//C_NULL_CHAR, val0)    ! Maximum number of cc/lambda iterations 
@@ -616,14 +658,32 @@ c     call set_predefined_scalar_array('oed_ovl'//C_NULL_CHAR, 2, sDim2, sVals)
       call set_constant('ntotshells'//C_NULL_CHAR, val0)  ! Number of shells in basis
 
       sDim1(1) = ntot_alpha
-      write(6,*) ' ALPHAS into SVALS ' 
+
+#ifdef _DEBUG_LVL0
+      write(6,"(a)") ' ALPHAS into SVALS ' 
+#endif 
       do i = 1, sDim1(1)
          sVals1(i) = talpha(i)
-         write(6,*) i, talpha(i), sVals1(i) 
+#ifdef _DEBUG_LVL0
+         write(6,"(I4,2F15.7)") i, talpha(i), sVals1(i) 
+#endif
       enddo
       call set_predefined_scalar_array('alphas'//C_NULL_CHAR,
      *                                           1,sDim1,sVals1)
 
+#ifdef _DEBUG_LVL0
+      write(6,"(a)") ' ALPHA NORMS into SVALS ' 
+#endif 
+      do i = 1, sDim1(1)
+         sVals1(i) = talpha_norm(i)
+#ifdef _DEBUG_LVL0
+         write(6,"(I4,2F15.7)") i, talpha_norm(i), sVals1(i) 
+#endif
+      enddo
+
+      call set_predefined_scalar_array('alpha_norms'//C_NULL_CHAR,
+     *                                           1,sDim1,sVals1)
+C
       sDim1(1) = ntot_pcoef
       do i = 1, sDim1(1)
          sVals1(i) = tpcoeff(i)
@@ -632,19 +692,27 @@ c     call set_predefined_scalar_array('oed_ovl'//C_NULL_CHAR, 2, sDim2, sVals)
      *                                            1,sDim1,sVals1)
 
       sDim1(1) = ntot_shells
-      write(6,*) ' IXALPHS ' 
+#ifdef _DEBUG_LVL0
+      write(6,"(a)") ' IXALPHS ' 
+#endif 
       do i = 1, sDim1(1)
          iVals1(i) = tixalpha(i)
-         write(6,*) i, tixalpha(i) 
+#ifdef _DEBUG_LVL0
+         write(6,"(I4,F15.7)") i, tixalpha(i) 
+#endif 
       enddo
       call set_predefined_integer_array('ixalphas'//C_NULL_CHAR,
      *                                  1,sDim1, iVals1)
 
       sDim1(1) = ntot_shells
-      write(6,*) ' IXCOEFFS ' 
+#ifdef _DEBUG_LVL0
+      write(6,"(a)") ' IXCOEFFS ' 
+#endif 
       do i = 1, sDim1(1)
          iVals1(i) = tixpcoeff(i)
-         write(6,*) i, iVals1(i) 
+#ifdef _DEBUG_LVL0
+         write(6,"(I4,F15.7)") i, iVals1(i) 
+#endif 
       enddo
       call set_predefined_integer_array('ixpcoeffs'//C_NULL_CHAR,1,
      *                                   sDim1, iVals1)
@@ -658,12 +726,14 @@ c Array containg atomic coordinates
          cVals(i,j) = acenter(j,i) 
       enddo 
       enddo 
-      write(6,*) ' COORDS:' 
+#ifdef _DEBUG_LVL0
+      write(6,"(a)") ' COORDS:' 
       do i = 1, sDim2(1) 
       do j = 1, sDim2(2) 
-         write(6,*) '  ', i, j, cVals(i,j) 
+         write(6,"(2I4,F15.7)") i, j, cVals(i,j) 
       enddo 
       enddo 
+#endif 
       call set_predefined_scalar_array('coords'//C_NULL_CHAR,
      *                                                2,sDim2,cVals)
 
@@ -674,44 +744,240 @@ c Array containg atomic coordinates
          cVals(i,j) = tcoord(i,j) 
       enddo 
       enddo 
+
+#ifdef _DEBUG_LVL0
       write(6,*) ' TCOORDS:' 
       do i = 1, sDim2(1) 
       do j = 1, sDim2(2) 
-         write(6,*) '  ', i, j, tcoord(i,j), cVals(i,j) 
+         write(6,"(2I4,2F15.7)") i, j, tcoord(i,j), cVals(i,j) 
       enddo 
       enddo 
+#endif 
       call set_predefined_scalar_array('tcoords'//C_NULL_CHAR,
      *                                               2,sDim2,cVals)
-
-
 c Form the arrays ccbeg and ccend and indx_cc  
 
       call setup_ccbeg(talpha, tixalpha, tpcoeff, tixpcoeff,
      *                       ncfps, npfps, nshells, ccbeg, ccend,
      *                       indx_cc, icc) 
-      write(6,*) ' CC_BEG '
+#ifdef _DEBUG_LVL0
+      write(6,"(a)") ' CC_BEG '
+#endif 
+
       sDim1(1) = icc  
+
+      call set_constant('n_c_funcs'//C_NULL_CHAR,icc)
+
       do i = 1, sDim1(1)
          iVals1(i) = ccbeg(i)
-         write(6,*) i, iVals1(i) 
+#ifdef _DEBUG_LVL0
+         write(6,"(I4,F15.7)") i, iVals1(i) 
+#endif 
       enddo
       call set_predefined_integer_array('ccbeg'//C_NULL_CHAR,1,sDim1,
      *                                   iVals1)
-      write(6,*) ' CC_END '
+#ifdef _DEBUG_LVL0
+      write(6,"(a)") ' CC_END '
+#endif 
       do i = 1, sDim1(1)
          iVals1(i) = ccend(i)
-         write(6,*) i, iVals1(i) 
+
+#ifdef _DEBUG_LVL0
+         write(6,"(I4,F15.7)") i, iVals1(i) 
+#endif 
       enddo
+
       call set_predefined_integer_array('ccend'//C_NULL_CHAR,1,sDim1,
      *                                   iVals1)
-      write(6,*) ' INDX_CC '
+#ifdef _DEBUG_LVL0
+      write(6,"(a)") ' INDX_CC '
+#endif 
       sDim1(1) = nshells   
       do i = 1, sDim1(1)
          iVals1(i) = indx_cc(i)
-         write(6,*) i, iVals1(i) 
+#ifdef _DEBUG_LVL0
+         write(6,"(I4,F15.7)") i, iVals1(i) 
+#endif 
       enddo
       call set_predefined_integer_array('indx_cc'//C_NULL_CHAR,1,sDim1,
      *                                   iVals1)
+C
+C Process the information need to evaluate the ECP integrals and write
+C the to the .dat file inorder to retrive them in ACESIV SIP. 
+C
+C#ifdef _DEBUG_LVL0
+         Write(*,*)
+         Write(*,"(a)") "The ECPs on a atom?"
+         write(6,"(10I4)") (ipseux(i), i=1, natoms)
+         Write(*,"(a)") "The maximum angular momentum"
+         write(6,"(10I4)") (llmax(i), i=1, natoms)
+         Write(*,"(a)") "The number of core electrons replaced by ECP"
+         write(6,"(10I4)") (nelecp(i), i=1, natoms)
+         Write(*,"(a)") "The kfirst and klast arrays"
+         write(6,"(10I4)") ((kfirst(i,j),i=1,Maxang),j=1,natoms)
+         write(6,"(10I4)") ((klast(i,j), i=1,Maxang),j=1,natoms)
+         Write(*,"(a)") "The nlp (R^n) Clp (coefs.) Zlp (exps) arrays"
+         Write(*,*) "The number atoms", natoms
+
+         do j=1, natoms 
+         if (ipseux(j) .gt.0) then
+         do k=1, llmax(j)+1
+            write(6,"(10I4)")   (nlp(i), i=kfirst(k,j), klast(k,j)) 
+            write(6,"(5F15.8)") (Clp(i), i=kfirst(k,j), klast(k,j)) 
+            write(6,"(5F15.8)") (zlp(i), i=kfirst(k,j), klast(k,j)) 
+            write(6,*)
+         enddo
+         endif 
+         enddo
+C#endif
+     
+C Lets find the maximum angular momentum 
+    
+      max_ecp_angmom = 0
+      num_ecp_prims  = 0
+      necp_atoms     = 0
+      jcount         = 0
+      kcount         = 0
+
+      Do i=1, natoms 
+         max_ecp_angmom = Max(max_ecp_angmom, llmax(i))
+         
+         Cint_ipseux(i) = ipseux(i)
+         Cint_llmax(i)  = llmax(i)
+         Cint_nelecp(i) = nelecp(i)
+
+         if (ipseux(i) .gt. 0) then
+            necp_atoms = necp_atoms + 1
+            do k= 1, llmax(i)+1
+               kcount = kcount + 1
+               num_ecp_prims = num_ecp_prims + 
+     *                         (klast(k,i) - kfirst(k,i)) + 1
+
+               Cint_kfirst(kcount) = kfirst(k,i)
+               Cint_klast(kcount)  = klast(k,i)
+
+               do j = kfirst(k,i), klast(k,i)
+                  jcount = jcount + 1 
+                  Cint_nlp(jcount) = nlp(j)
+                  Cdbl_Clp(jcount) = clp(j)
+                  Cdbl_zlp(jcount) = zlp(j)
+               enddo 
+
+            enddo
+         endif 
+      Enddo 
+     
+      max_num_ecp_prims = num_ecp_prims 
+      kfirst_last_length= necp_atoms * (max_ecp_angmom+1)
+
+      Cint_ipseud(1)         = ipseud
+      Cint_natoms(1)         = natoms 
+      Cint_necp_atoms(1)     = necp_atoms
+      Cint_maX_ecp_angmom(1) = Max_ecp_angmom
+      Cint_max_ecp_prims(1)  = max_num_ecp_prims
+      Cint_kfirst_last_len(1)= kfirst_last_length 
+
+C#ifdef _DEBUG_LVL0      
+      Write(6,"(a,I4)") " The number of atoms with an ECP: ", 
+     *                    Cint_necp_atoms
+      Write(6,"(a,I4)") " The maximum ECP ang. momentum: ", 
+     *                    Cint_maX_ecp_angmom
+      Write(6,"(a,I4)") " The maximum ECP primitives: ", 
+     *                    Cint_maX_ecp_prims 
+C#endif
+
+      tot_elements_1 = 0
+      tot_elements_2 = 0
+      Do i=1, natoms 
+         Cint_iqmstr(i) = iqmstr(i)
+
+         do k=1, iqmstr(i)
+            tot_elements_1 = tot_elements_1 + 1
+            Cint_jcostr(tot_elements_1) = jcostr(i,k)
+         enddo 
+
+         do j= 1, iqmstr(i)
+
+            do k=1, jcostr(i,j)
+               tot_elements_2  = tot_elements_2 + 1
+               Cint_nucstr(tot_elements_2) = nucstr(i,j,k)
+               Cint_nrcstr(tot_elements_2) = nrcstr(i,j,k)
+            enddo 
+
+         enddo 
+      enddo
+
+      do j=1, Nshells
+         Cint_jstrt(j) = jstrt(j) 
+         Cint_jrs(j)   = jrs(j)
+      enddo 
+      
+      Cint_jcostr_length(1)     = tot_elements_1
+      Cint_nr_nu_str_length(1)  = tot_elements_2
+      Cint_nshells(1)           = Nshells 
+C
+C#ifdef _DEBUG_LVL0      
+      write(6,*) " The Cint_iqmstr", tot_elements_1, tot_elements_2
+      write(6,"(10I4)") (Cint_iqmstr(i),i=1,natoms)
+C#endif
+C Dump all the ECP data to the .Dat file.
+C
+      call set_constant('ipseud'//C_NULL_CHAR,Cint_ipseud(1)) 
+
+      call set_constant('necp_atoms'//C_NULL_CHAR,Cint_necp_atoms(1)) 
+
+      call set_constant('max_ecp_angmom'//C_NULL_CHAR,
+     *                                    Cint_maX_ecp_angmom(1))
+
+      call set_constant('max_ecp_prims'//C_NULL_CHAR,
+     *                                     Cint_maX_ecp_prims(1))
+
+      call set_predefined_integer_array('ipseux'//C_NULL_CHAR,1, 
+     *                                   Cint_natoms, Cint_ipseux)
+
+      call set_predefined_integer_array('llmax'//C_NULL_CHAR,1, 
+     *                                   Cint_natoms, Cint_llmax)
+
+      call set_predefined_integer_array('nelecp'//C_NULL_CHAR,1,
+     *                                   Cint_natoms, Cint_nelecp)
+
+      call set_predefined_integer_array('kfirst'//C_NULL_CHAR,1,
+     *                                   Cint_kfirst_last_len, 
+     *                                   Cint_kfirst)
+
+      call set_predefined_integer_array('klast'//C_NULL_CHAR,1,
+     *                                  Cint_kfirst_last_len, 
+     *                                  Cint_klast)
+
+      call set_predefined_integer_array('nlp'//C_NULL_CHAR,1,
+     *                                 Cint_max_ecp_prims, Cint_nlp)
+
+      call set_predefined_integer_array('iqmstr'//C_NULL_CHAR,1,
+     *                                 Cint_natoms, Cint_iqmstr)
+
+      call set_predefined_integer_array('jstrt'//C_NULL_CHAR,1,
+     *                                 Cint_nshells, Cint_jstrt)
+
+      call set_predefined_integer_array('jrs'//C_NULL_CHAR,1,
+     *                                 Cint_nshells, Cint_jrs)
+
+      call set_predefined_integer_array('jcostr'//C_NULL_CHAR,1,
+     *                                  Cint_jcostr_length, 
+     *                                  Cint_jcostr)
+
+      call set_predefined_integer_array('nucstr'//C_NULL_CHAR,1,
+     *                                  Cint_nr_nu_str_length, 
+     *                                  Cint_nucstr)
+
+      call set_predefined_integer_array('nrcstr'//C_NULL_CHAR,1,
+     *                                  Cint_nr_nu_str_length, 
+     *                                  Cint_nrcstr)
+
+      call set_predefined_scalar_array('clp'//C_NULL_CHAR,1,
+     *                                 Cint_max_ecp_prims, Cdbl_clp)
+
+      call set_predefined_scalar_array('zlp'//C_NULL_CHAR,1,
+     *                                Cint_max_ecp_prims, Cdbl_zlp)
 
 c Form the arrays end_nfps, ncfps, npfps, ivangmom, atom[map of atoms to shells] 
 
@@ -766,18 +1032,62 @@ c     if (.not. ispherical) intSpherical = 0
       call set_constant('ncenters'//C_NULL_CHAR,ncenters) 
 
       sDim1(1) = ncenters  
-      write(6,*) ' Number of charges = ', sDim1(1) 
+#ifdef _DEBUG_LVL0
+      write(6,"(a)") ' Number of charges = ', sDim1(1) 
+#endif 
       do i = 1, sDim1(1)
          sVals1(i) = charge(i)
-         write(6,*) i, sVals1(i) 
       enddo
+#ifdef _DEBUG_LVL0
+      write(6,"(10I4)") (sVals1(i), i=1, sDim1(1))
+#endif 
       call set_predefined_scalar_array('charge'//C_NULL_CHAR,
      *                                           1,sDim1,sVals1)
 
 c Set the maximum number of integral Shells  
       call set_constant('max_shells'//C_NULL_CHAR,max_shells) 
 
-      write(6,*) ' Done setting predefined arrays ' 
+C Write the number of basis functions (read and computed from the
+C MOL file. Notice that this does not account for drop-orbitals (which
+C in principle should be accounted for by nalpha_occupied,
+C nbeta_occupied and so on.
+     
+      call set_constant('nbasis_funcs'//C_NULL_CHAR,nbasis) 
+
+C The new key-tokens that deals with SCF convegence. These are all 
+C read from the input file and consistent with ACES II/III and now IV.
+
+C#ifdef _DEBUG_LVL0
+      Write(*,*)
+      Write(*,"(a)") "The predefined scalars in set_up_main.F:"
+      Write(*,*)
+      Write(*,"(a,a,a,a)")"Guess,lshft_a1,lshft_b1,damp_type"
+      Write(*,"(4i4)") guess, lshft_a1, lshft_b1, damp_type
+      Write(*,"(a,a,a,a)")"lock_orbocc,lock_orbitals,damp_tol,damp_end"
+      Write(*,"(4i4)") lock_orbocc, lock_orbitals, damp_tol, damp_end
+      Write(*,"(a,a)")"diis_start,diss_order,iecp_on"
+      Write(*,"(3i4)") diis_start, diis_order,iecp_on
+      Write(*,*) 
+C#endif 
+      Three_natoms = 3 * Natoms
+      call set_constant('guess'//C_NULL_CHAR,guess) 
+      call set_constant('lshft_a1'//C_NULL_CHAR,lshft_a1) 
+      call set_constant('lshft_b1'//C_NULL_CHAR,lshft_b1) 
+      call set_constant('damp_type'//C_NULL_CHAR,damp_type) 
+      call set_constant('lock_orbocc'//C_NULL_CHAR,lock_orbocc) 
+      call set_constant('lock_orbitals'//C_NULL_CHAR,lock_orbitals) 
+      call set_constant('damp_tol'//C_NULL_CHAR,damp_tol) 
+      call set_constant('damp_end'//C_NULL_CHAR,damp_end) 
+      call set_constant('diis_start'//C_NULL_CHAR,diis_start) 
+      call set_constant('diis_order'//C_NULL_CHAR,diis_order) 
+      call set_constant('natoms'//C_NULL_CHAR,natoms) 
+      call set_constant('iecp_on'//C_NULL_CHAR,iecp_on) 
+      call set_constant('Three_natoms'//C_NULL_CHAR,Three_natoms) 
+      call set_constant('reference'//C_NULL_CHAR,iuhf) 
+C
+C Added on 04/2005, Ajith Perera.
+
+      write(6,*) ' Done setting second set of predefined arrays ' 
 
 c     call set_predefined_scalar_array('fockrohf_a'//C_NULL_CHAR, 2,
 c    *                            fockrohf_a)  

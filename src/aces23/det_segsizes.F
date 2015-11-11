@@ -62,6 +62,11 @@ c   o count the number of AOs per shell
      *                 sip_mx_ao_segsize)
          sip_mx_occ_segsize = max(oa_segsize, ob_segsize)
          sip_mx_virt_segsize = max(va_segsize, vb_segsize)
+#ifdef _DEBUG_LVL0
+         Write(*,*)
+         Write(*,"(a,2I3)") "Max seg_sizes", sip_mx_occ_segsize, 
+     *                               sip_mx_virt_segsize
+#endif 
       else 
          print *,'Error: Invalid value for auto_seg_switch ',
      *      'in det_segsizes: ',auto_seg_switch
@@ -308,7 +313,6 @@ c ----------------------------------------------------------------------
          print *,'Error in binpack_cost: Shells must have a mass > 0,'
          print *,'and the group limit (',iSegSize,
      *           ') must be >= the largest shell size (',lrg,').'
-         print *, ' VFL WHAT??' 
          call abort_job()
       end if
 
