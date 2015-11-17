@@ -108,13 +108,13 @@ C         else
             if (eocc_frag(i,nocc_frag(i)) .gt. ndrop)
      *         eocc_frag(i,nocc_frag(i)) = ndrop
             dls = nocc_frag(i) + 1
-            nocc = nocc + nocc_frag(i)  - 1
+            nocc = nocc_frag(i)
             endif
 CCCC
             nocc_frag(i) = occ_frag(i)/mx_occ_seg_size + dls - 1
             if (nocc_frag(i)*mx_occ_seg_size .lt. occ_frag(i)) 
      *          nocc_frag(i) = nocc_frag(i) + 1 
-            nocc = nocc + nocc_frag(i)
+            nocc = nocc_frag(i)
 
             do j = dls, nocc_frag(i) 
                if (j .eq. dls) then 
@@ -255,7 +255,7 @@ c     endif
             eavirt_frag(i,j) = evirt_frag(i,j) + start  
 #ifdef _DEBUG_LVL0
       write(*,*)
-      write(6,'(a,2I4)") "bavirt_frag, eavirt_frag", bavirt_frag(i,j), 
+      write(6,"(a,2I4)") "bavirt_frag, eavirt_frag", bavirt_frag(i,j), 
      *                    eavirt_frag(i,j) 
 #endif 
          enddo 
@@ -358,7 +358,7 @@ CCCC
             nocc_frag(i) = occ_frag(i)/mx_occ_seg_size + dls - 1
             if (nocc_frag(i)*mx_occ_seg_size .lt. occ_frag(i)) 
      *          nocc_frag(i) = nocc_frag(i) + 1 
-            nocc = nocc + nocc_frag(i) 
+            nocc = nocc_frag(i) 
 
             do j = dls, nocc_frag(i) 
                if (j .eq. dls) then 
