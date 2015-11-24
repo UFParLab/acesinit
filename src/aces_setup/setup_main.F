@@ -140,6 +140,9 @@ c     character*80 local_path
       character*80 debug_print
 c     integer (C_INT) nworkthread
       character*80 auto_seg_algorithm
+      character*80 ihess_str
+      character*80 jhess_str
+      character*80 sub_str
       character*80 ctrip_str
       character*80 ihess_str
       character*80 jhess_str
@@ -719,6 +722,38 @@ C
       enddo
       call set_predefined_integer_array('ixpcoeffs'//C_NULL_CHAR,1,
      *                                   sDim1, iVals1)
+
+c
+c Input variables that control the Hessian evaluation. The IHESS
+C and JHESS variables in *SIP block control the Hessian calculation. If
+c nothing is specified then the full Hessian is compted. If it is
+c specified then the Hessian is evlauted only on the atom ranges
+c specified by the two variable.  Ajith Perera, 11/2015
+c
+      if (ihess_str .eq. ' ') then
+         ihess1 = 1
+         ihess2 = ncenters
+      else
+         read (ihess_str, *) i1, i2
+         ihess1 = i1
+         ihess2 = i2
+      endif
+
+      if (jhess_str .eq. ' ') then
+          jhess1 = 1
+          jhess2 = ncenters
+       else
+         read (jhess_str, *) i1, i2
+         jhess1 = i1
+         jhess2 = i2
+       endif
+
+c Save ihess1-2, and jhess1-2 into .dat file as predifined constants
+
+       call set_constant('ihess1'//C_NULL_CHAR,ihess1)
+       call set_constant('ihess2'//C_NULL_CHAR,ihess2)
+       call set_constant('jhess1'//C_NULL_CHAR,jhess1)
+       call set_constant('jhess2'//C_NULL_CHAR,jhess2)
 
 c Array containg atomic coordinates 
 
