@@ -90,7 +90,7 @@ c---------------------------------------------------------------------------
          do i = 1, nshells
             ixshells(i) = i
          enddo
-C         go to 1000 
+         go to 1000 
          if (intpkg .eq. gamess_package .or.
      *       intpkg .eq. gamess_derivative_package) go to 1000
          if ((ECP .eq. 0) .and. (.NOT. frag_calc)) then  
