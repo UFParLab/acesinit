@@ -249,7 +249,7 @@ c   Attempt to improve segmentation.
 c
       call refine_segs(nocci, 20, 35, o_seg)
       call refine_segs(nvirti, 20, 35, v_seg)
-      call refine_segs(norbi, 20, 35, n_seg)
+      call refine_segs(norbi, 15, 22, n_seg)
       return
       end 
 

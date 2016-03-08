@@ -515,7 +515,7 @@ c-------------------------------------------------------------------------------
       call set_constant('bbocc'//C_NULL_CHAR, val0)    ! Beginning beta occupied segment  
       val0 = nbfocc  
       call set_constant('ebocc'//C_NULL_CHAR, val0)    ! Ending beta occupied  segment 
-      val0 = nbfocc + 1 
+      val0 = nafocc + 1 
       call set_constant('bavirt'//C_NULL_CHAR, val0)   ! Beginning alpha virtual segment  
       val0 = nafocc + nafvirt  
       call set_constant('eavirt'//C_NULL_CHAR, val0)   ! Ending alpha virtual segment  
