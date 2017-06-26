@@ -52,6 +52,7 @@ C  in the file COPYRIGHT.
       integer idiis_start, idiis_order 
       integer idamp_type, idamp_tol,ilindep_tol,ilock_orbitals 
       integer iintgrl_tol, ilock_orbocc, idamp_end
+      integer iee_guess,iee_denom
       integer ijunk(100)
       integer iflags(500)
 
@@ -346,7 +347,8 @@ C
         Idamp_end      = iflags(161)
         Idiis_start    = ijunk(40)
         Idiis_order    = ijunk(20)
-  
+        Iee_guess      = iflags(162)
+        Iee_denom      = iflags(163)
   
         Damp_type     = Idamp_type
         Damp_tol      = Idamp_tol
@@ -356,6 +358,8 @@ C
         Damp_end      = Idamp_end
         Diis_start    = Idiis_start
         Diis_order    = Idiis_order
+        Ee_guess      = Iee_guess
+        Ee_denom      = Iee_denom 
         
 c-------------------------------------------------------------------------
 c   Read IFLAGS2 off JOBARC.

@@ -121,6 +121,7 @@ C
       integer auto_seg_switch 
       integer m_segs 
       integer n_a_occ, n_b_occ, n_a_virt, n_b_virt 
+      integer i1,i2,j1,j2
 
 c------------------------------------------------------------------------------------------  
 c                  Parameters read from ZMAT   
@@ -435,9 +436,11 @@ c     enddo
          enddo 
       enddo 
 
-c     do i = 1, norbs 
-c        write(6,*) ' NORBS DD :', norbs, dd(i) 
-c     enddo 
+#ifdef _DEBUG_LVL0
+      do i = 1, norbs 
+        write(6,*) ' NORBS DD :', norbs, dd(i) 
+      enddo 
+#endif 
 
       call set_moindex_info(norbs,dd)              ! MO index ranges. BOTH occupied and virtual 
       sDim1(1) = norbs     
@@ -515,7 +518,10 @@ c-------------------------------------------------------------------------------
       call set_constant('bbocc'//C_NULL_CHAR, val0)    ! Beginning beta occupied segment  
       val0 = nbfocc  
       call set_constant('ebocc'//C_NULL_CHAR, val0)    ! Ending beta occupied  segment 
-      val0 = nbfocc + 1 
+CSSS      val0 = nbfocc + 1 
+C Bug fix on 06/2017, Ajith Perera
+
+      val0 = nafocc + 1
       call set_constant('bavirt'//C_NULL_CHAR, val0)   ! Beginning alpha virtual segment  
       val0 = nafocc + nafvirt  
       call set_constant('eavirt'//C_NULL_CHAR, val0)   ! Ending alpha virtual segment  
@@ -719,6 +725,38 @@ C
       enddo
       call set_predefined_integer_array('ixpcoeffs'//C_NULL_CHAR,1,
      *                                   sDim1, iVals1)
+
+c
+c Input variables that control the Hessian evaluation. The IHESS
+C and JHESS variables in *SIP block control the Hessian calculation. If
+c nothing is specified then the full Hessian is compted. If it is
+c specified then the Hessian is evlauted only on the atom ranges
+c specified by the two variable.  Ajith Perera, 11/2015
+c
+      if (ihess_str .eq. ' ') then
+         ihess1 = 1
+         ihess2 = ncenters
+      else
+         read (ihess_str, *) i1, i2
+         ihess1 = i1
+         ihess2 = i2
+      endif
+
+      if (jhess_str .eq. ' ') then
+          jhess1 = 1
+          jhess2 = ncenters
+       else
+         read (jhess_str, *) i1, i2
+         jhess1 = i1
+         jhess2 = i2
+       endif
+
+c Save ihess1-2, and jhess1-2 into .dat file as predifined constants
+
+       call set_constant('ihess1'//C_NULL_CHAR,ihess1)
+       call set_constant('ihess2'//C_NULL_CHAR,ihess2)
+       call set_constant('jhess1'//C_NULL_CHAR,jhess1)
+       call set_constant('jhess2'//C_NULL_CHAR,jhess2)
 
 c Array containg atomic coordinates 
 
@@ -1070,6 +1108,8 @@ C#ifdef _DEBUG_LVL0
       Write(*,"(4i4)") lock_orbocc, lock_orbitals, damp_tol, damp_end
       Write(*,"(a,a)")"diis_start,diss_order,iecp_on"
       Write(*,"(3i4)") diis_start, diis_order,iecp_on
+      Write(*,"(a,a)")"ee_guess,ee_denom"
+      Write(*,"(2i4)") ee_guess,ee_denom
       Write(*,*) 
 C#endif 
       Three_natoms = 3 * Natoms
@@ -1087,6 +1127,8 @@ C#endif
       call set_constant('iecp_on'//C_NULL_CHAR,iecp_on) 
       call set_constant('Three_natoms'//C_NULL_CHAR,Three_natoms) 
       call set_constant('reference'//C_NULL_CHAR,iuhf) 
+      call set_constant('ee_guess'//C_NULL_CHAR,ee_guess) 
+      call set_constant('ee_denom'//C_NULL_CHAR,ee_denom) 
 C
 C Added on 04/2005, Ajith Perera.
 

@@ -374,10 +374,12 @@ const ASV_nl_t ASV_nl[] =
 {/*258*/ "UNCONTRACT",  "UNCONT#RACT",  h_ICHAR_handle, 0,      ""},
 {/*259*/ "IOPT_CTRL",   "OPT_CONT#ROL", h_ICHAR_handle, 0,      ""},
 {/*260*/ "ILOCK_ORBS",  "LOCK_ORBITALS",h_ICHAR_handle, 0,      ""},
-{/*261*/ "IDAMP_END",   "DAMP_END"     ,h_ICHAR_handle, 200,     ""},
-{/*262*/ "",   ""     ,h_ICHAR_handle,0,""},
+{/*261*/ "IDAMP_END",   "DAMP_END"     ,h_ICHAR_handle, 200,    ""},
+{/*262*/ "EE_GUESS",    "EE_GUESS"     ,h_ICHAR_handle, 0,      ""},
+{/*263*/ "EE_DENOM",    "EE_DENOM"     ,h_ICHAR_handle, 0,      ""},
+{/*264*/ "",   ""     ,h_ICHAR_handle,0,""},
 }; /* end ASV_nl[] definition */
-#define MAX_ASVs 262
+#define MAX_ASVs 264
 
 /******************************************************************************/
 
@@ -850,6 +852,20 @@ void asv_handle_proc(const f_int * index, const char * value)
                 "STEOM",	/* 9 */
                 ""
             };
+            asv_update_handle(index,value,handles);
+            break;
+        }
+
+        case h_IOPPAR_ee_guess:
+        {
+            const char *handles[] = { "CIS", "EXTERNAL", "" };
+            asv_update_handle(index,value,handles);
+            break;
+        }
+
+        case h_IOPPAR_ee_denom:
+        {
+            const char *handles[] = { "FOCK", "HBAR", "" };
             asv_update_handle(index,value,handles);
             break;
         }

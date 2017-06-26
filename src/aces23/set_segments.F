@@ -189,16 +189,16 @@ c As a test just set virt fragmants
 c Determine the effective mx_occ_seg_size 
 
       nsegs = nvirt_orbitals/mx_virt_seg_size 
-#ifdef _DEBUG_LVL0
+C#ifdef _DEBUG_LVL0
       write(6,"(a,2I4)") ' The nsegs @-set_navirt_segs', nsegs, 
      *                     mx_virt_seg_size 
-#endif 
+C#endif 
       if (nsegs*mx_virt_seg_size .ne. nvirt_orbitals) nsegs = nsegs + 1 
       mx_virt_seg_size = nvirt_orbitals/nsegs 
-#ifdef _DEBUG_LVL0
+C#ifdef _DEBUG_LVL0
       write(6,"(a,2I4)") ' The nsegs @-set_navirt_segs', nsegs, 
      *                     mx_virt_seg_size 
-#endif 
+C#endif 
 
 100   continue 
 
@@ -248,14 +248,14 @@ c     endif
          n_avirt(i) = nvirt_frag(i) 
 #ifdef _DEBUG_LVL0
       write(*,*)
-      write(6,"(a,I4)") "i, n_avirt(i): " i, n_avirt(i)
+      write(6,"(a,2I4)") "i, n_avirt(i): ", i, n_avirt(i)
 #endif 
          do j = 1, nvirt_frag(i)
             bavirt_frag(i,j) = bvirt_frag(i,j) + start  
             eavirt_frag(i,j) = evirt_frag(i,j) + start  
 #ifdef _DEBUG_LVL0
       write(*,*)
-      write(6,'(a,2I4)") "bavirt_frag, eavirt_frag", bavirt_frag(i,j), 
+      write(6,"(a,2I4)") "bavirt_frag, eavirt_frag", bavirt_frag(i,j), 
      *                    eavirt_frag(i,j) 
 #endif 
          enddo 
