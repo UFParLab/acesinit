@@ -129,6 +129,7 @@ c nContAOs : total number of contracted functions
       integer guess, lshft_a1, lshft_b1, damp_type, damp_tol
       integer lindep_tol, lock_orbitals, intgrl_tol, damp_end
       integer lock_orbocc, diis_start, diis_order, natoms, iecp_on
+      integer ee_guess,ee_denom      
 
       double precision excite, eom_tol, eom_roots ! Watson Added
       integer polarizability, a_tensor, g_tensor, d_tensor
@@ -197,7 +198,8 @@ c nContAOs : total number of contracted functions
      &                     lshft_b1, damp_type, damp_tol, lindep_tol,
      &                     lock_orbitals, lock_orbocc, intgrl_tol, 
      &                     damp_end, diis_start, diis_order,
-     &                     natoms, iecp_on, ialpha_norm,
+     &                     natoms, iecp_on, ialpha_norm,ee_guess,
+     &                     ee_denom,
      &                     last 
 
 

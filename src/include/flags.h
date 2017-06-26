@@ -516,5 +516,11 @@
 #define h_IOPPAR_opt_control    259
 #define h_IFLAGS2_opt_control   159
 
+#define h_IOPPAR_ee_guess       262
+#define h_IFLAGS2_ee_guess      161
+
+#define h_IOPPAR_ee_denom       263
+#define h_IFLAGS2_ee_denom      162
+
 #endif /* _FLAGS_H_ */
 

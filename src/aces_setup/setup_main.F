@@ -121,6 +121,7 @@ C
       integer auto_seg_switch 
       integer m_segs 
       integer n_a_occ, n_b_occ, n_a_virt, n_b_virt 
+      integer i1,i2,j1,j2
 
 c------------------------------------------------------------------------------------------  
 c                  Parameters read from ZMAT   
@@ -140,9 +141,6 @@ c     character*80 local_path
       character*80 debug_print
 c     integer (C_INT) nworkthread
       character*80 auto_seg_algorithm
-      character*80 ihess_str
-      character*80 jhess_str
-      character*80 sub_str
       character*80 ctrip_str
       character*80 ihess_str
       character*80 jhess_str
@@ -438,9 +436,11 @@ c     enddo
          enddo 
       enddo 
 
-c     do i = 1, norbs 
-c        write(6,*) ' NORBS DD :', norbs, dd(i) 
-c     enddo 
+#ifdef _DEBUG_LVL0
+      do i = 1, norbs 
+        write(6,*) ' NORBS DD :', norbs, dd(i) 
+      enddo 
+#endif 
 
       call set_moindex_info(norbs,dd)              ! MO index ranges. BOTH occupied and virtual 
       sDim1(1) = norbs     
@@ -518,7 +518,10 @@ c-------------------------------------------------------------------------------
       call set_constant('bbocc'//C_NULL_CHAR, val0)    ! Beginning beta occupied segment  
       val0 = nbfocc  
       call set_constant('ebocc'//C_NULL_CHAR, val0)    ! Ending beta occupied  segment 
-      val0 = nbfocc + 1 
+CSSS      val0 = nbfocc + 1 
+C Bug fix on 06/2017, Ajith Perera
+
+      val0 = nafocc + 1
       call set_constant('bavirt'//C_NULL_CHAR, val0)   ! Beginning alpha virtual segment  
       val0 = nafocc + nafvirt  
       call set_constant('eavirt'//C_NULL_CHAR, val0)   ! Ending alpha virtual segment  
@@ -1105,6 +1108,8 @@ C#ifdef _DEBUG_LVL0
       Write(*,"(4i4)") lock_orbocc, lock_orbitals, damp_tol, damp_end
       Write(*,"(a,a)")"diis_start,diss_order,iecp_on"
       Write(*,"(3i4)") diis_start, diis_order,iecp_on
+      Write(*,"(a,a)")"ee_guess,ee_denom"
+      Write(*,"(2i4)") ee_guess,ee_denom
       Write(*,*) 
 C#endif 
       Three_natoms = 3 * Natoms
@@ -1122,6 +1127,8 @@ C#endif
       call set_constant('iecp_on'//C_NULL_CHAR,iecp_on) 
       call set_constant('Three_natoms'//C_NULL_CHAR,Three_natoms) 
       call set_constant('reference'//C_NULL_CHAR,iuhf) 
+      call set_constant('ee_guess'//C_NULL_CHAR,ee_guess) 
+      call set_constant('ee_denom'//C_NULL_CHAR,ee_denom) 
 C
 C Added on 04/2005, Ajith Perera.
 
