@@ -108,13 +108,13 @@ C         else
             if (eocc_frag(i,nocc_frag(i)) .gt. ndrop)
      *         eocc_frag(i,nocc_frag(i)) = ndrop
             dls = nocc_frag(i) + 1
-            nocc = nocc + nocc_frag(i)  - 1
+            nocc = nocc_frag(i)
             endif
 CCCC
             nocc_frag(i) = occ_frag(i)/mx_occ_seg_size + dls - 1
             if (nocc_frag(i)*mx_occ_seg_size .lt. occ_frag(i)) 
      *          nocc_frag(i) = nocc_frag(i) + 1 
-            nocc = nocc + nocc_frag(i)
+            nocc = nocc_frag(i)
 
             do j = dls, nocc_frag(i) 
                if (j .eq. dls) then 
@@ -358,7 +358,7 @@ CCCC
             nocc_frag(i) = occ_frag(i)/mx_occ_seg_size + dls - 1
             if (nocc_frag(i)*mx_occ_seg_size .lt. occ_frag(i)) 
      *          nocc_frag(i) = nocc_frag(i) + 1 
-            nocc = nocc + nocc_frag(i) 
+            nocc = nocc_frag(i) 
 
             do j = dls, nocc_frag(i) 
                if (j .eq. dls) then 

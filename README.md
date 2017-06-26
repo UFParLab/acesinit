@@ -38,19 +38,19 @@ To Use
 ------
 Copy all the files in ```src/test``` and the ```acesinit``` executable to a separate directory. This folder should contain these files:
 ```BASH
-default_jobflows
 GENBAS
-sial_config
 ZMAT
 acesinit
 ```
 The ZMAT file contains the molecule configuration and other configuration parameters.
 The GENBAS file contains basis set information.
-The sial_config file contains configuration for each of the SIAL files.
-The default_jobflows file contains "jobs" or sets of SIAL files to be run one after the other to execute a particular quantum mechanical method.
 
 In this directory, run the acesinit file.
-The generated ```data.dat``` binary file contains initialization data for aces4.
+The generated ```data.dat``` binary file contains initialization data for aces4
+and should replicate the results from the Aces4 Sial_QM.second_ccsdpt_test
+google test.
+
+Default job flows are listed at [https://github.com/UFParLab/aces4/wiki/Quantum-Chemistry-Domain-Capabilities#ground-state-jobflows]
 
 Utility
 -------

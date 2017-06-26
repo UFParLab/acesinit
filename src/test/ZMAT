@@ -1,0 +1,18 @@
+Sial_QM.second_ccsdpt_test 
+H 0.0 0.0 0.0
+F 0.0 0.0 0.917
+
+*ACES2(BASIS=3-21G
+scf_conv=12
+cc_conv=12
+spherical=off
+CALC=ccsd)
+
+*SIP
+MAXMEM=1500
+SIAL_PROGRAM = scf_rhf_coreh.siox
+SIAL_PROGRAM = tran_rhf_no4v.siox
+SIAL_PROGRAM = rccsd_rhf.siox
+SIAL_PROGRAM = rccsdpt_aaa.siox
+SIAL_PROGRAM = rccsdpt_aab.siox
+
