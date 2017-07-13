@@ -316,7 +316,7 @@ const ASV_nl_t ASV_nl[] =
 {/*202*/ "IEASYM",	"EA_SYM#",	h_ICHAR_string,	0,	""},
 {/*203*/ "ITDHF",	"TDHF#",	h_ICHAR_handle,	0,	""},
 {/*204*/ "IFNCTL",	"FUNCT#IONAL",	h_ICHAR_handle,	4,	""},
-{/*205*/ "IEOMCY",	"EOM_MAXCY#C",	h_ICHAR_f_int,	50,	"cycles"},
+{/*205*/ "IEOMCY",	"EOM_MAXCY#C",	h_ICHAR_f_int,	30,	"cycles"},
 {/*206*/ "IEOMPR",	"EOMPROP#",	h_ICHAR_handle,	0,	""},
 {/*207*/ "IABCDF",	"ABCDFULL#",	h_ICHAR_handle,	0,	""},
 {/*208*/ "IINTOL",	"INTGRL_TOL#",	h_ICHAR_f_int,	14,	"(tol)"},
