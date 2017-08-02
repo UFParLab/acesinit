@@ -20,7 +20,7 @@ extern "C" {
 #endif
 
 void init_setup(const char * job_name){
-	   setup::OutputFile * file;
+	   setup::OutputStream * file;
 	   std::string name = std::string(job_name);
 //	   if (sip::SETUP_FILE_TYPE_IS_BINARY){
 		   setup::BinaryOutputFile *bfile = new setup::BinaryOutputFile(name + ".dat");
@@ -102,12 +102,10 @@ void set_config_info(const char* sialfile, const char* key, const char* value){
 
 
 void dump_file(const char * name){
-	setup::InputFile * file;
-	file = new setup::BinaryInputFile(std::string(name));
-	setup::SetupReader reader;
-	reader.read(file);
+	std::string fname = std::string(name);
+	setup::BinaryInputFile bfile (fname);
+	setup::SetupReader reader(bfile);
 	reader.dump_data();
-	delete file;
 }
 
 #ifdef __cplusplus

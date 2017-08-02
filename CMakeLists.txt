@@ -4,15 +4,26 @@ project(aces4)
 
 enable_language(Fortran)
 
+set(SIA_SOURCEFILES
+    src/utils/sia_defs.h;
+    src/utils/block.h;
+    src/utils/block.cpp;
+    src/utils/block_shape.h;
+    src/utils/block_shape.cpp;
+    src/utils/query_checkpoint.h;
+    src/utils/query_checkpoint.cpp;
+    src/utils/worker_persistent_array_manager.h;
+    src/utils/worker_persistent_array_manager.cpp;)
+
 set(ACES_SETUPFILES;
-    src/setup/io_utils.h
-    src/setup/setup_reader.h
-    src/setup/setup_interface.h
-    src/setup/setup_writer.h
-    src/setup/setup_reader.cpp
-    src/setup/setup_interface.cpp
-    src/setup/setup_writer.cpp
-    src/setup/io_utils.cpp)
+    src/setup/io_utils.h;
+    src/setup/io_utils.cpp;
+    src/setup/setup_reader.h;
+    src/setup/setup_reader.cpp;
+    src/setup/setup_interface.h;
+    src/setup/setup_interface.cpp;
+    src/setup/setup_writer.h;
+    src/setup/setup_writer.cpp)
 
 set(ACES_BASIS_FILES
     src/basis/array_constants.h
@@ -498,21 +509,24 @@ FortranCInterface_VERIFY()
 
 add_executable(acesinit;
     ${ACESINIT_SOURCEFILES};
+    ${SIA_SOURCEFILES};
     ${ACES_SETUPFILES};
     ${ACES_BASIS_FILES};
-    ${ACESINIT_BLAS_SOURCEFILES}
+    ${ACESINIT_BLAS_SOURCEFILES};
     src/aces_setup/setup_main_entry.c)
 
-add_executable(init_file_print;
-    ${ACES_SETUPFILES}
-    ${ACES_BASIS_FILES}
-    src/utils/init_file_print_main.cpp)
+  #add_executable(init_file_print;
+  #    ${SIA_SOURCEFILES};
+  #    ${ACES_SETUPFILES}
+  #    ${ACES_BASIS_FILES}
+  #    src/utils/print_init_file.cpp)
 
 
 include_directories(
     src/include
     src/setup
     src/basis
+    src/utils
     ${CMAKE_BINARY_DIR})
 
 # To deal with the ACES2 part in the initialization executable

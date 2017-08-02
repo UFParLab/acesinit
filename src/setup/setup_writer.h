@@ -30,11 +30,14 @@ namespace setup {
 
 class SetupWriter {
 public:
-    SetupWriter (std::string, OutputFile *);
+    SetupWriter (std::string jobname, OutputStream * file);
     ~SetupWriter ();
 //	void init_(const char * job_name);
     void write_header_file();
 	void write_data_file();
+#ifdef HAVE_JSON
+	std::string get_json_string();
+#endif
 	void addPredefinedIntHeader(std::string name, int val);
 	void addPredefinedIntData(std::string name, int val);
 	void addPredefinedContiguousArray(std::string name, int rank, int * dims, double * data);
@@ -46,14 +49,17 @@ public:
 	typedef std::map<std::string, int> PredefInt;
 	typedef std::map<std::string, double> PredefScalar;
 	typedef std::map<int, std::pair<int, int *> > SegSizeArray;
+	typedef SegSizeArray::iterator SegSizeArrayIterator;
 	typedef std::vector<std::string> SialProg;
 	typedef std::map<std::string, std::pair<int, std::pair<int *, double *> > > PredefArrMap;
+	typedef PredefArrMap::iterator PredefArrayIterator;
 	typedef std::map<std::string, std::pair<int, std::pair<int *, int *> > > PredefIntArrMap;
+	typedef PredefIntArrMap::iterator PredefIntArrayIterator;
 	typedef std::map<std::string, std::string> KeyValueMap;
 	typedef std::map<std::string, KeyValueMap > FileConfigMap;
 private:
 	std::string jobname_;
-	OutputFile * file;
+	OutputStream * file;
 	PredefInt header_constants_;  //predefined ints to be defined in header file
 	PredefInt data_constants_;  //predefined ints to be read from data file
 	PredefScalar scalars_;  //predefined scalars
