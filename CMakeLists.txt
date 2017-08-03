@@ -501,6 +501,9 @@ set(ACESINIT_SOURCEFILES
     src/include/ecp_info.h;
     src/aces_setup/setup_main.F)
 
+set(ACESFIN_SOURCEFILES
+    src/acesfin/a2proc_init.F;
+    src/acesfin/main.F)
 
 include(FortranCInterface)
 FortranCInterface_HEADER(fc.h MACRO_NAMESPACE "FC_")
@@ -521,6 +524,13 @@ add_executable(acesinit;
   #    ${ACES_BASIS_FILES}
   #    src/utils/print_init_file.cpp)
 
+add_executable(acesfin;
+    ${ACESINIT_SOURCEFILES};
+    ${ACES_SETUPFILES};
+    ${ACES_BASIS_FILES};
+    ${ACESINIT_BLAS_SOURCEFILES}
+    ${ACESFIN_SOURCEFILES}
+    src/acesfin/main.c)
 
 include_directories(
     src/include
