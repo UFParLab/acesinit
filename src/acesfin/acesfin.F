@@ -8,10 +8,14 @@ c#define _DIMARGS 3 /* 3 args required by jarec */
 #include "flags.h"
       
       subroutine acesfin()
+      use, intrinsic :: iso_c_binding
       implicit none
 
+      include 'query_checkpoint.f'
+
 c INTERNAL VARIABLES
-      integer dimargs, iuhf
+      integer dimargs, iuhf, Natoms, Ngrads
+      Double precision Grad(3*3)
       character*80 module
       character*80 args(_DIMARGS)
       Logical OPTARC_EXIST
@@ -51,6 +55,16 @@ c         print *, 'gennbo'
          print '()'
          stop
       end if
+
+      Natoms = 3
+      Ngrads = 3*Natoms 
+
+      call get_persistent_static_from_checkpoint(
+     &     "_2017Aug07_155614.5.worker_checkpoint"//C_NULL_CHAR,
+     &     "Total_gradient"//C_NULL_CHAR,
+     &     , Ngrads, Ngrads, Grad)
+
+       
 
 #ifdef _NOSKIP
 
