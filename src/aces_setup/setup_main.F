@@ -152,6 +152,8 @@ c     integer (C_INT) sip_sub_virt_segsize
 c     integer (C_INT) sip_sub_ao_segsize
 c      character *80 tmp
 
+      logical ab_occ_same, ab_vrt_same, ab_same 
+
       print *, 'calling initsetup_f from fortran'
 
       call init_machine_types() 
@@ -364,13 +366,26 @@ c-------------------------------------------------------------------------------
       enddo 
       baocc_drop = 1
       bbocc_drop = 1
-      write(6,*) ' Nalpha occ virt = ', nalpha_occupied, nalpha_virtual 
-      call set_naocc_segs(nafocc, nalpha_occupied, sip_mx_occ_segsize) 
-      call set_nbocc_segs(nbfocc, nbeta_occupied, sip_mx_occ_segsize) 
+       
+      ab_occ_same = (nalpha_occupied .eq. nbeta_occupied)
+      ab_vrt_same = (nalpha_virtual  .eq. nbeta_virtual)
+      ab_same     = (ab_occ_same .and. ab_vrt_same) 
+
+      write(6,*) 'Nalpha occ virt = ', nalpha_occupied, nalpha_virtual 
+      write(6,*) "ab_occ,ab_vrt,ab_same = ", ab_occ_same,ab_vrt_same,
+     +                                        ab_same 
+
+      call set_naocc_segs(nafocc, nalpha_occupied, sip_mx_occ_segsize,
+     *                    ab_same) 
       call set_navirt_segs(nafvirt, nalpha_occupied, nalpha_virtual, 
-     *                     sip_mx_virt_segsize) 
-      call set_nbvirt_segs(nbfvirt, nbeta_occupied, nbeta_virtual, 
-     *                     sip_mx_virt_segsize) 
+     *                     sip_mx_virt_segsize,ab_same) 
+
+      if (.not. ab_same) then
+         call set_nbocc_segs(nbfocc, nbeta_occupied, sip_mx_occ_segsize) 
+         call set_nbvirt_segs(nbfvirt, nbeta_occupied, nbeta_virtual, 
+     *                        sip_mx_virt_segsize) 
+      endif 
+
       call shells_to_segments(sip_mx_ao_segsize, segs, nsegs, .false.)
       nfrags = 1 
       endif 

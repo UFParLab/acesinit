@@ -12,7 +12,8 @@ C  GNU General Public License for more details.
 
 C  The GNU General Public License is included in this distribution
 C  in the file COPYRIGHT.
-      subroutine set_naocc_segs(nocc, nocc_orbitals, mx_occ_seg_size) 
+      subroutine set_naocc_segs(nocc, nocc_orbitals, mx_occ_seg_size,
+     +                          ab_same)
       implicit none 
       include 'frag_def.h'
       include 'dropmo.h'
@@ -20,7 +21,7 @@ C  in the file COPYRIGHT.
       integer i, j, start, nsegs    
       integer n_frag, occ_frag(maxfrag), nocc_frag(maxfrag)
 
-      logical isdropmo
+      logical isdropmo,ab_same 
       integer mx_drop_seg_size
       integer dls
       integer ndrop
@@ -166,15 +167,27 @@ C reset occupied orbital count
           nocc_orbitals = nocc_orbitals + ndropmo_a
       endif
 
+      if (ab_same)then
+         do i=1,n_frag
+            n_bocc(i) =  n_aocc(i) 
+            do j = 1, nocc_frag(i)
+               bbocc_frag(i,j) =  baocc_frag(i,j)
+               ebocc_frag(i,j) =  eaocc_frag(i,j)
+            enddo
+         enddo
+      endif 
+       
+      return 
       end
 
       subroutine set_navirt_segs(nvirt,nocc_orbitals,nvirt_orbitals,
-     *                           mx_virt_seg_size) 
+     *                           mx_virt_seg_size,ab_same)
       implicit none 
       include 'frag_def.h'
       integer nvirt, nocc_orbitals, nvirt_orbitals, mx_virt_seg_size
       integer i, j, start, nsegs    
       integer n_frag, virt_frag(maxfrag), nvirt_frag(maxfrag) 
+      logical ab_same 
 
 c As a test just set virt fragmants 
 
@@ -262,7 +275,17 @@ c     endif
          start = eavirt_frag(i,nvirt_frag(i)) 
       enddo 
 
+      if (ab_same)then
+         do i=1,n_frag
+            n_bvirt(i) = n_avirt(i)
+            do j = 1, nvirt_frag(i)
+               bbvirt_frag(i,j) =  bavirt_frag(i,j)
+               ebvirt_frag(i,j) =  eavirt_frag(i,j)
+            enddo
+         enddo
+      endif
 
+      return
       end
 
       subroutine set_nbocc_segs(nocc, nocc_orbitals, mx_occ_seg_size) 
