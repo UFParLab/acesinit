@@ -157,6 +157,12 @@ C---
       Write(6,*)
 #endif 
 C
+C Fix the silliness that natoms is not set to something. There is no
+C reason to have two different names for this (ncenters and natoms).
+C I am suprised that this was not noticed before. 
+
+      Natoms = Ncenters 
+
       write(6,*) ' NBASIS AFTER SIMPLE_INSPECT ', nbasis  
       if (cartesian) then
          ispherical = 0
