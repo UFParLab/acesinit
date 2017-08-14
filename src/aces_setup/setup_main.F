@@ -576,9 +576,6 @@ C Bug fix on 06/2017, Ajith Perera
       call set_scalar('eom_tol'//C_NULL_CHAR, dval)     ! eom convergence threshold
       val0 = eom_roots
       call set_constant('eom_roots'//C_NULL_CHAR, val0)   ! number of EOM roots
-      val0 = eom_roots*3
-      call set_constant('eom_subspc'//C_NULL_CHAR, val0)  ! size of davidson subspace collapse 
-
 C
       write(6,*) ' Done setting integer constants ' 
 
@@ -1123,8 +1120,8 @@ C#ifdef _DEBUG_LVL0
       Write(*,"(4i4)") lock_orbocc, lock_orbitals, damp_tol, damp_end
       Write(*,"(a,a)")"diis_start,diss_order,iecp_on"
       Write(*,"(3i4)") diis_start, diis_order,iecp_on
-      Write(*,"(a,a)")"ee_guess,ee_denom"
-      Write(*,"(2i4)") ee_guess,ee_denom
+      Write(*,"(a,a)")"ee_guess,ee_denom,ee_subspc"
+      Write(*,"(2i4)") ee_guess,ee_denom,ee_subspc
       Write(*,*) 
 C#endif 
       Three_natoms = 3 * Natoms
@@ -1144,6 +1141,7 @@ C#endif
       call set_constant('reference'//C_NULL_CHAR,iuhf) 
       call set_constant('ee_guess'//C_NULL_CHAR,ee_guess) 
       call set_constant('ee_denom'//C_NULL_CHAR,ee_denom) 
+      call set_constant('ee_subspc'//C_NULL_CHAR,ee_subspc) 
 C
 C Added on 04/2005, Ajith Perera.
 
