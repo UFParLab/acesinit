@@ -379,11 +379,13 @@ c-------------------------------------------------------------------------------
      *                    ab_same) 
       call set_navirt_segs(nafvirt, nalpha_occupied, nalpha_virtual, 
      *                     sip_mx_virt_segsize,ab_same) 
-
       if (.not. ab_same) then
          call set_nbocc_segs(nbfocc, nbeta_occupied, sip_mx_occ_segsize) 
          call set_nbvirt_segs(nbfvirt, nbeta_occupied, nbeta_virtual, 
      *                        sip_mx_virt_segsize) 
+      else 
+         nbfocc  = nafocC
+         nbfvirt = nafvirt
       endif 
 
       call shells_to_segments(sip_mx_ao_segsize, segs, nsegs, .false.)
