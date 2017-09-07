@@ -17,43 +17,36 @@
 !>
 !> These definitions are made available by including the following statement
 !>      use, intrinsic :: ISO_C_BINDING
-!>  Open and read the checkpoint file.
-!>  @param file_name The null terminated name of the checkpoint file.
 
+
+
+
+!>  Open and read the checkpoint file.
+!>  @param name The null terminated name of the checkpoint file.
       interface
-      subroutine open_checkpoint (file_name) bind(C)
-      character, dimension(*), intent(in) :: file_name
+      subroutine open_checkpoint (name) bind(C)
+      use, intrinsic::ISO_C_BINDING
+      implicit none
+      character(kind=c_char, len=1), intent(in) :: name(*)      
       end subroutine open_checkpoint
       end interface
-
-
       interface
+
+
       subroutine get_persistent_static(label,num_elems,
-     *                                  dims,vals) bind(C)
+     *                                  extents,vals) bind(C)
       use, intrinsic :: ISO_C_BINDING
-      character, dimension(*), intent(in):: label
+      implicit none
+      character(kind=c_char, len=1), intent(in) :: label(*)
       integer (C_INT), intent(out)::num_elems
-      TYPE(C_PTR), intent(out)::dims
+      TYPE(C_PTR), intent(out)::extents
       TYPE(C_PTR), intent(out)::vals
       end subroutine get_persistent_static
       end interface
 
 
-      interface
-      subroutine get_persistent_static_from_checkpoint(
-     *             filename, label,num_elems,
-     *                                  dims,vals) bind(C)
-      use, intrinsic :: ISO_C_BINDING
-      character, dimension(*), intent(in):: filename
-      character, dimension(*), intent(in):: label
-      integer (C_INT), intent(out)::num_elems
-      TYPE(C_PTR), intent(out)::dims
-      TYPE(C_PTR), intent(out)::vals
-      end subroutine get_persistent_static_from_checkpoint
-      end interface
 
 !> Closes checkpoint file and release resources
-
       interface
       subroutine close_checkpoint() bind(C)
       end subroutine close_checkpoint

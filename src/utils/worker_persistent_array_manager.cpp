@@ -99,7 +99,8 @@ namespace sip {
 		Block* b = it-> second;
 		BlockShape shape = b->shape();
 		*num_elems = shape.num_elems();
-		*extents = shape.segment_sizes_;
+		//*extents = shape.segment_sizes_;
+                *extents = const_cast<int*>(& ((b->shape()).segment_sizes_[0]));
 		*values = b->get_data();
 		return;
 	}

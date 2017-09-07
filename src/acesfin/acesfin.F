@@ -15,11 +15,17 @@ c#define _DIMARGS 3 /* 3 args required by jarec */
 
 c INTERNAL VARIABLES
       integer dimargs, iuhf, Natoms, Ngrads
-      Double precision Grad(3*3)
+c      Double precision Grad(3*3)
       character*80 module
       character*80 args(_DIMARGS)
       Logical OPTARC_EXIST
 
+c Variables for reading data from checkpoint
+      integer(C_INT)::size   !total size of array
+      TYPE (C_PTR)::pe   !pointer to single element array of extent
+      integer, pointer :: e(:)  !one element extent array
+      TYPE(C_PTR)::pGrad  ! pointer to array of values
+      real(C_DOUBLE),pointer::Grad(:)   !array of values  in array b
 c COMMON BLOCKS
 #include "icore.com"
 #include "istart.com"
@@ -58,12 +64,22 @@ c         print *, 'gennbo'
 
       Natoms = 3
       Ngrads = 3*Natoms 
-
-      call get_persistent_static_from_checkpoint(
-     &     "_2017Aug07_155614.5.worker_checkpoint"//C_NULL_CHAR,
+      call open_checkpoint(
+     &     "_2017Aug07_155614.5.worker_checkpoint"//C_NULL_CHAR)
+      call get_persistent_static(
      &     "Total_gradient"//C_NULL_CHAR,
-     &     , Ngrads, Ngrads, Grad)
+     &     size, pe, pGrad)
+c  size should be 9
+c  dereference the C_PTR to get the extents in a Fortran int array
+c  for a 1d array, this is an array of size 1
+          call c_f_pointer(pe,e,[1])
+           !print the value, which should be the same as size, or 9
+           print *, 'e(1)', e(1)
 
+
+           !dereference the C_PTR to get the values in a Fortran
+           !real(C_DOUBLE) array
+          call c_f_pointer(pGrad,Grad,e)
        
 
 #ifdef _NOSKIP
