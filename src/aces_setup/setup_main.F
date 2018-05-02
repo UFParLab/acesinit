@@ -37,6 +37,7 @@ c      parameter (mxcbf = 500)
       integer (C_INT) nbfvirt 
       integer (C_INT) norb 
       integer (C_INT) norbs 
+      integer (C_INT) niorbs 
       integer (C_INT) nsegs 
       integer (C_INT) c_nshells  
 
@@ -121,6 +122,7 @@ C
       integer auto_seg_switch 
       integer m_segs 
       integer n_a_occ, n_b_occ, n_a_virt, n_b_virt 
+      integer nTot, nover  
 
 c------------------------------------------------------------------------------------------  
 c                  Parameters read from ZMAT   
@@ -152,6 +154,10 @@ c     integer (C_INT) sip_sub_ao_segsize
 c      character *80 tmp
 
       print *, 'calling initsetup_f from fortran'
+
+c This is kindof kludgy but we initialize som parameters here
+      ndropmo_a = 0 
+      ndropmo_b = 0 
 
       call init_machine_types() 
 
@@ -357,21 +363,33 @@ c                 Now you can build the segment tables.
 c------------------------------------------------------------------------------------------  
 
       if (.not. frag_calc) then  
-      nfrags = 1 
-      do i = 1, nshells 
-         segs(i) = 0 
-      enddo 
-      baocc_drop = 1
-      bbocc_drop = 1
+         nfrags = 1 
+         do i = 1, nshells 
+            segs(i) = 0 
+         enddo 
+         baocc_drop = 1
+         bbocc_drop = 1
       write(6,*) ' Nalpha occ virt = ', nalpha_occupied, nalpha_virtual 
-      call set_naocc_segs(nafocc, nalpha_occupied, sip_mx_occ_segsize) 
-      call set_nbocc_segs(nbfocc, nbeta_occupied, sip_mx_occ_segsize) 
-      call set_navirt_segs(nafvirt, nalpha_occupied, nalpha_virtual, 
-     *                     sip_mx_virt_segsize) 
-      call set_nbvirt_segs(nbfvirt, nbeta_occupied, nbeta_virtual, 
-     *                     sip_mx_virt_segsize) 
+
+c     call set_naocc_segs(nafocc, nalpha_occupied, sip_mx_occ_segsize) 
+c     call set_nbocc_segs(nbfocc, nbeta_occupied, sip_mx_occ_segsize) 
+c     call set_navirt_segs(nafvirt, nalpha_occupied, nalpha_virtual, 
+c    *                        sip_mx_virt_segsize) 
+c     call set_nbvirt_segs(nbfvirt, nbeta_occupied, nbeta_virtual, 
+c    *                        sip_mx_virt_segsize) 
+
+c VFL test on 4/12/2018 
+      nafocc = nalpha_occupied / sip_mx_occ_segsize 
+      n_aocc(1) = nafocc  
+      nbfocc = nbeta_occupied / sip_mx_occ_segsize 
+      n_bocc(1) = nbfocc  
+      nafvirt = nalpha_virtual / sip_mx_virt_segsize 
+      n_avirt(1) = nafvirt   
+      nbfvirt = nbeta_virtual / sip_mx_virt_segsize 
+      n_bvirt(1) = nbfvirt   
+
       call shells_to_segments(sip_mx_ao_segsize, segs, nsegs, .false.)
-      nfrags = 1 
+         nfrags = 1 
       endif 
 
 
@@ -420,24 +438,53 @@ c     enddo
       call set_predefined_integer_array('ao_seg_ranges'//C_NULL_CHAR,1,
      *                                   sDim1, iVals1) 
 
+c Determine the alpha moindex ranges 
+      nafocc = (nalpha_occupied-ndropmo_a) / sip_mx_occ_segsize 
       norbs = 0 
       do kfrag = 1, nfrags 
-         do i = 1, n_aocc(kfrag) 
+         if (ndropmo_a .eq. 0) then 
+            dd(1) = nalpha_occupied/ nafocc 
+         else 
+            dd(1) = ndropmo_a 
+            baocc_drop = 2
+         endif 
+         nTot = dd(1)  
+         norbs = 1 
+         do i = 2, nafocc - 1    
             norbs = norbs + 1 
-            dd(norbs) = eaocc_frag(kfrag,i) - baocc_frag(kfrag,i) +1 
+            dd(norbs) = (nalpha_occupied-ndropmo_a) / nafocc  
+            nTot = nTot + dd(norbs) 
          enddo 
+         norbs = norbs + 1 
+         dd(norbs) = nalpha_occupied - nTot 
       enddo 
+      niorbs = norbs 
 
+      nafvirt = nalpha_virtual / sip_mx_virt_segsize 
       do kfrag = 1, nfrags 
-         do i = 1, n_avirt(kfrag) 
+         norbs = norbs + 1 
+         dd(norbs) = nalpha_virtual / nafvirt  
+         nTot = dd(norbs)  
+         do i = 2, n_avirt(kfrag)-1  
             norbs = norbs + 1 
-            dd(norbs) = eavirt_frag(kfrag,i) - bavirt_frag(kfrag,i)+1  
+            dd(norbs) = nalpha_virtual / nafvirt   
+            nTot = nTot + dd(norbs) 
          enddo 
+         norbs = norbs + 1 
+         dd(norbs) = nalpha_virtual - nTot 
+c check if last seg is too large 
+         nover = dd(norbs) - nalpha_virtual / nafvirt 
+         if (nover .le. dd(norbs) - 1) then  
+            do i = 1, nover 
+               dd(niorbs+i) = dd(niorbs+i) + 1 
+            enddo 
+            dd(norbs) = dd(norbs) - nover  
+         endif 
       enddo 
 
-c     do i = 1, norbs 
-c        write(6,*) ' NORBS DD :', norbs, dd(i) 
-c     enddo 
+      do i = 1, norbs 
+         write(6,*) ' NORBS DD alpha :', norbs, dd(i), ndropmo_a  
+      enddo 
 
       call set_moindex_info(norbs,dd)              ! MO index ranges. BOTH occupied and virtual 
       sDim1(1) = norbs     
@@ -458,19 +505,52 @@ c     enddo
       call set_predefined_integer_array('moa_seg_ranges'//C_NULL_CHAR,1,
      *                                   sDim1, iVals1) 
 
+c Determine the beta moindex ranges 
+      nbfocc = (nbeta_occupied-ndropmo_b) / sip_mx_occ_segsize 
       norbs = 0 
       do kfrag = 1, nfrags 
-         do i = 1, n_bocc(kfrag) 
+         if (ndropmo_b .eq. 0) then 
+            dd(1) = nbeta_occupied/ nbfocc 
+         else 
+            dd(1) = ndropmo_b 
+            bbocc_drop = 2
+         endif 
+         nTot = dd(1)  
+         norbs = 1 
+         do i = 2, nbfocc - 1   
             norbs = norbs + 1 
-            dd(norbs) = ebocc_frag(kfrag,i) - bbocc_frag(kfrag,i) +1 
+            dd(norbs) = (nbeta_occupied-ndropmo_b) / nbfocc  
+            nTot = nTot + dd(norbs) 
          enddo 
+         norbs = norbs + 1 
+         dd(norbs) = nbeta_occupied - nTot 
+      enddo 
+      niorbs = norbs 
+
+      nbfvirt = nbeta_virtual / sip_mx_virt_segsize 
+      do kfrag = 1, nfrags 
+         norbs = norbs + 1 
+         dd(norbs) = nbeta_virtual / nbfvirt  
+         nTot = dd(norbs)  
+         do i = 2, n_bvirt(kfrag)-1  
+            norbs = norbs + 1 
+            dd(norbs) = nbeta_virtual / nbfvirt   
+            nTot = nTot + dd(norbs) 
+         enddo 
+         norbs = norbs + 1 
+         dd(norbs) = nbeta_virtual - nTot 
+c check if last seg is too large 
+         nover = dd(norbs) - nbeta_virtual / nbfvirt 
+         if (nover .le. dd(norbs) - 1) then  
+            do i = 1, nover 
+               dd(niorbs+i) = dd(niorbs+i) + 1 
+            enddo 
+            dd(norbs) = dd(norbs) - nover  
+         endif 
       enddo 
 
-      do kfrag = 1, nfrags 
-         do i = 1, n_bvirt(kfrag) 
-            norbs = norbs + 1 
-            dd(norbs) = ebvirt_frag(kfrag,i) - bbvirt_frag(kfrag,i)+1  
-         enddo 
+      do i = 1, norbs 
+         write(6,*) ' NORBS DD beta :', norbs, dd(i), ndropmo_b  
       enddo 
 
       call set_mobindex_info(norbs,dd)              ! MO beta index ranges. BOTH occupied and virtual 
@@ -1059,13 +1139,6 @@ C nbeta_occupied and so on.
 
 C The new key-tokens that deals with SCF convegence. These are all 
 C read from the input file and consistent with ACES II/III and now IV.
-
-C#ifdef _DEBUG_LVL0
-      Write(*,*)
-      Write(*,"(a)") "The predefined scalars in set_up_main.F:"
-      Write(*,*)
-      Write(*,"(a,a,a,a)")"Guess,lshft_a1,lshft_b1,damp_type"
-      Write(*,"(4i4)") guess, lshft_a1, lshft_b1, damp_type
       Write(*,"(a,a,a,a)")"lock_orbocc,lock_orbitals,damp_tol,damp_end"
       Write(*,"(4i4)") lock_orbocc, lock_orbitals, damp_tol, damp_end
       Write(*,"(a,a)")"diis_start,diss_order,iecp_on"
