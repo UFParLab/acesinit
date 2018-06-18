@@ -147,9 +147,9 @@ c     integer (C_INT) nworkthread
       character*80 jhess_str
       character*80 sub_str
       character*80 timer_param  
-c     integer (C_INT) sip_sub_segsize
-c     integer (C_INT) sip_sub_occ_segsize
-c     integer (C_INT) sip_sub_virt_segsize
+      integer (C_INT) sub_segsize
+      integer (C_INT) sub_occ_segsize
+      integer (C_INT) sub_virt_segsize
 c     integer (C_INT) sip_sub_ao_segsize
 c      character *80 tmp
 
@@ -379,6 +379,17 @@ c     call set_nbvirt_segs(nbfvirt, nbeta_occupied, nbeta_virtual,
 c    *                        sip_mx_virt_segsize) 
 
 c VFL test on 4/12/2018 
+
+      sip_mx_occ_segsize = min(sip_mx_occ_segsize, 
+     *                         nalpha_occupied-ndropmo_a) 
+      sip_mx_occ_segsize = min(sip_mx_occ_segsize,
+     *                         nbeta_occupied-ndropmo_b) 
+
+      sip_mx_virt_segsize = min(sip_mx_virt_segsize, nalpha_virtual) 
+      sip_mx_virt_segsize = min(sip_mx_virt_segsize, nbeta_virtual) 
+c Make sure more than 1 virtual segment 
+c     sip_mx_virt_segsize = sip_mx_virt_segsize / 2  
+
       nafocc = nalpha_occupied / sip_mx_occ_segsize 
       n_aocc(1) = nafocc  
       nbfocc = nbeta_occupied / sip_mx_occ_segsize 
@@ -447,16 +458,23 @@ c Determine the alpha moindex ranges
          else 
             dd(1) = ndropmo_a 
             baocc_drop = 2
+            nafocc = nafocc + 1 
          endif 
          nTot = dd(1)  
          norbs = 1 
-         do i = 2, nafocc - 1    
+         if (nafocc .gt. 1) then 
+            do i = 2, nafocc - 1    
+               norbs = norbs + 1 
+               if (ndropmo_a .eq. 0) then 
+                  dd(norbs) = nalpha_occupied / nafocc 
+               else 
+                  dd(norbs) = (nalpha_occupied-ndropmo_a) / (nafocc - 1)  
+               endif 
+               nTot = nTot + dd(norbs) 
+            enddo 
             norbs = norbs + 1 
-            dd(norbs) = (nalpha_occupied-ndropmo_a) / nafocc  
-            nTot = nTot + dd(norbs) 
-         enddo 
-         norbs = norbs + 1 
-         dd(norbs) = nalpha_occupied - nTot 
+            dd(norbs) = nalpha_occupied - nTot 
+         endif 
       enddo 
       niorbs = norbs 
 
@@ -507,6 +525,8 @@ c check if last seg is too large
 
 c Determine the beta moindex ranges 
       nbfocc = (nbeta_occupied-ndropmo_b) / sip_mx_occ_segsize 
+c Make bnfocc the same as nafocc 
+      if (ndropmo_b .gt. 0) nbfocc = nafocc - 1 
       norbs = 0 
       do kfrag = 1, nfrags 
          if (ndropmo_b .eq. 0) then 
@@ -514,16 +534,23 @@ c Determine the beta moindex ranges
          else 
             dd(1) = ndropmo_b 
             bbocc_drop = 2
+            nbfocc = nbfocc + 1 
          endif 
          nTot = dd(1)  
          norbs = 1 
-         do i = 2, nbfocc - 1   
+         if (nbfocc .gt. 1) then 
+            do i = 2, nbfocc - 1   
+               norbs = norbs + 1 
+               if (ndropmo_b .eq. 0) then 
+                  dd(norbs) = nbeta_occupied / nbfocc 
+               else 
+                  dd(norbs) = (nbeta_occupied-ndropmo_b) / (nbfocc - 1)  
+               endif 
+               nTot = nTot + dd(norbs) 
+            enddo 
             norbs = norbs + 1 
-            dd(norbs) = (nbeta_occupied-ndropmo_b) / nbfocc  
-            nTot = nTot + dd(norbs) 
-         enddo 
-         norbs = norbs + 1 
-         dd(norbs) = nbeta_occupied - nTot 
+            dd(norbs) = nbeta_occupied - nTot 
+         endif 
       enddo 
       niorbs = norbs 
 
@@ -587,11 +614,11 @@ c-------------------------------------------------------------------------------
       call set_constant('bocc'//C_NULL_CHAR, val0)     ! Beginning occupied segment  
       val0 = nafocc 
       call set_constant('eocc'//C_NULL_CHAR, val0)     ! Ending occupied  segment 
-      val0 = baocc_drop ! start segments at 1 
+      val0 = 1 ! baocc_drop ! start segments at 1 
       call set_constant('baocc'//C_NULL_CHAR, val0)    ! Beginning alpha occupied segment  
       val0 = nafocc  
       call set_constant('eaocc'//C_NULL_CHAR, val0)    ! Ending alpha occupied  segment 
-      val0 = bbocc_drop ! start segments at 1 
+      val0 = 1 ! bbocc_drop ! start segments at 1 
       call set_constant('bbocc'//C_NULL_CHAR, val0)    ! Beginning beta occupied segment  
       val0 = nbfocc  
       call set_constant('ebocc'//C_NULL_CHAR, val0)    ! Ending beta occupied  segment 
@@ -603,6 +630,16 @@ c-------------------------------------------------------------------------------
       call set_constant('bbvirt'//C_NULL_CHAR, val0)   ! Beginning beta virtual segment  
       val0 = nbfocc + nbfvirt  
       call set_constant('ebvirt'//C_NULL_CHAR, val0)   ! Ending beta virtual segment  
+
+      val0 = baocc_drop ! start segments at 1 
+      call set_constant('baocc_drop'//C_NULL_CHAR, val0)    ! Beginning alpha dropped segment  
+      val0 = bbocc_drop ! start segments at 1 
+      call set_constant('bbocc_drop'//C_NULL_CHAR, val0)    ! Beginning beta dropped segment  
+
+      val0 = ndropmo_a + 1   
+      call set_constant('ndropmo_a'//C_NULL_CHAR, val0)    ! Number alpha dropped   
+      val0 = ndropmo_b + 1  
+      call set_constant('ndropmo_b'//C_NULL_CHAR, val0)    ! Number beta dropped   
 
 
       val0 = nalpha_occupied + 1  
@@ -638,7 +675,12 @@ c-------------------------------------------------------------------------------
       val0 = eom_roots*3
       call set_constant('eom_subspc'//C_NULL_CHAR, val0)  ! size of davidson subspace collapse 
 
-C
+      call set_constant('sub_segsize'//C_NULL_CHAR, sip_sub_segsize) !  subsegment size  
+      call set_constant('sub_occ_segsize'//C_NULL_CHAR, 
+     *                   sip_sub_occ_segsize) !  soccupiedubsegment size  
+      call set_constant('sub_virt_segsize'//C_NULL_CHAR, 
+     *                   sip_sub_virt_segsize) !  soccupiedubsegment size  
+
       write(6,*) ' Done setting integer constants ' 
 
 c     if (ignore_dropmo) then 

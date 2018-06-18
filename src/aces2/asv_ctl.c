@@ -120,7 +120,7 @@ const ASV_nl_t ASV_nl[] =
 {/*17*/  "IOCCU",	"OCC#UPATION",	h_ICHAR_string,	0,	""},
 {/*18*/  "IPROPS",	"PROP#S",	h_ICHAR_handle,	0,	""},
 {/*19*/  "IDENS",	"DENS#ITY",	h_ICHAR_handle,	0,	""},
-{/*20*/  "IRPPOR",	"SCF_EXPOR#DE",	h_ICHAR_f_int,	6,	""},
+{/*20*/  "IRPPOR",	"SCF_EXPOR#DE",	h_ICHAR_f_int,	14,	""},
 /*       *alias,	*oppar,		ichar,		ideflt,	*units */
 {/*21*/  "ICCEXT",	"CC_EXT#RAPOL",	h_ICHAR_handle,	1,	""},
 {/*22*/  "IBRKNR",	"BRUEC#KNER",	h_ICHAR_handle,	0,	""},
